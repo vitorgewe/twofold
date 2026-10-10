@@ -3,12 +3,12 @@ id: T011
 type: task
 feature: "[[F01-app-foundation]]"
 milestone: "[[M1-foundation]]"
-status: todo
+status: blocked
 depends_on: []
 estimate_tokens: 800000
 estimate_hours: 1
-actual_tokens: 182432
-actual_hours: 0.00
+actual_tokens: 208778
+actual_hours: 0.01
 tags: [task]
 ---
 # T011 Scaffold Expo app
@@ -46,5 +46,10 @@ Out of scope: the database, ledger code, real screens, tab navigation.
 - [[ADR-0012-english-only]]
 
 ## Progress
+
+### 2026-10-10
+- Done: read constitution, methodology, module and ticket; confirmed the repo has no `package.json` yet.
+- Failed or surprising: the session runs in "don't ask" permission mode and the first write/network command (`npx create-expo-app` into a temp folder) was denied, so nothing could be scaffolded. No code changed.
+- Next: rerun with Bash permission for `npx`, `npm`, `git` and `.relay/*.sh` (or approve those commands), then follow the Scaffold section of `.relay/module.md`. Needed from the human: that permission.
 
 ## QA
