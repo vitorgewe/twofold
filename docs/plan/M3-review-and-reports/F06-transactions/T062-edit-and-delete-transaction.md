@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T061-transactions-list]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 87241
+actual_hours: 0.06
 tags: [task]
 ---
 # T062 Edit and delete transaction
