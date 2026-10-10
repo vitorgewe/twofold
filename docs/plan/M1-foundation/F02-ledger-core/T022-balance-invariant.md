@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T021-money-and-currency]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 37987
+actual_hours: 0.01
 tags: [task]
 ---
 # T022 Balance invariant
