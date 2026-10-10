@@ -10,7 +10,7 @@ One TypeScript codebase runs on iOS, Android and the web. The web target is what
 
 The first task of the first milestone is always the scaffold. It must:
 
-1. Create the app in the repository root with `npx create-expo-app@latest . --template default` (TypeScript, Expo Router). The folder is not empty, so scaffold into a temporary folder and move the files if the command refuses.
+1. Create the app in the repository root (TypeScript, Expo Router). The folder is not empty, so scaffold inside the repository, in the ignored folder `.relay/scaffold`, with relative paths: `npx --yes create-expo-app@latest .relay/scaffold --template default --no-install`. Then `cp -R` the files the app needs up to the root. Unattended sessions are refused when they `cd` outside the repository, so do not scaffold in a system temporary folder. Do not rely on `rm`: it is not on the allow list, because a rule matches command text and `rm` limited to one path would still accept more paths. Use `git rm` for tracked files you must remove, and leave `.relay/scaffold` where it is (it is gitignored).
 2. Confirm the web target runs: `npx expo start --web --port 8081`.
 3. Add `@playwright/test` as a dev dependency and run `npx playwright install chromium`.
 4. Add `jest-expo` and `@testing-library/react-native`, with a `test` script, and make Jest ignore `e2e/`.
@@ -22,9 +22,16 @@ The first task of the first milestone is always the scaffold. It must:
 | Purpose | Command |
 |---|---|
 | Install and start the web dev server | `.relay/init.sh` (prints the URL, safe to run twice) |
+| Restart the dev server (after changing `metro.config.js`, `app.json`, env files) | `.relay/init.sh --restart` |
 | Type check, lint, unit tests, web export | `.relay/verify.sh` |
 | Unit tests only | `npx jest` |
 | Smoke test against the dev server | `npx playwright test e2e/smoke.spec.ts` |
+
+## Unattended sessions
+
+- Create and change files with the Write and Edit tools. Shell redirection and heredocs (`cat > file <<'EOF'`) are refused by the permission rules.
+- Manage the dev server only through `.relay/init.sh`. It records the server it starts and `--restart` replaces exactly that one; relay stops it when the run ends. Do not kill processes by name, do not `sleep` to wait for it, and do not move to another port: a server on 8081 that is in the way is replaced with `--restart`. An environment prefix such as `PORT=8082 .relay/init.sh` does not match the permission rule and is refused.
+- If `.relay/init.sh --restart` says the server was not started by relay, stop and record it in the ticket's Progress as `blocked`: a human has to stop it.
 
 ## Testing as a user
 

@@ -25,6 +25,7 @@
       "Bash(git mv *)",
       "Bash(git rm *)",
       "Bash(ls*)",
+      "Bash(/bin/ls*)",
       "Bash(mkdir *)",
       "Bash(cd *)",
       "Bash(pwd*)",
