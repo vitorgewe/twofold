@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "twofold",
+    "slug": "twofold",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "scheme": "twofold",
+    "userInterfaceStyle": "automatic",
+    "web": {
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
