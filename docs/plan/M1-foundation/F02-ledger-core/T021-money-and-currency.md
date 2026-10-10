@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T011-scaffold-expo-app]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 41404
+actual_hours: 0.02
 tags: [task]
 ---
 # T021 Money and currency
