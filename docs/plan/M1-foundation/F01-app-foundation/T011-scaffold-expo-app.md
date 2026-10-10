@@ -7,8 +7,8 @@ status: review
 depends_on: []
 estimate_tokens: 800000
 estimate_hours: 1
-actual_tokens: 208778
-actual_hours: 0.01
+actual_tokens: 267144
+actual_hours: 0.09
 tags: [task]
 ---
 # T011 Scaffold Expo app
