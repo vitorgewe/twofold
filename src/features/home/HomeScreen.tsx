@@ -54,6 +54,9 @@ export function HomeScreen() {
       <Pressable accessibilityRole="button" onPress={() => router.push('/transactions/new')} style={styles.button}>
         <Text style={styles.buttonText}>{strings.home.newTransaction}</Text>
       </Pressable>
+      <Link href="/transactions" style={styles.link}>
+        {strings.transactions.menu}
+      </Link>
       <Link href="/accounts" style={styles.link}>
         {strings.accounts.menu}
       </Link>
