@@ -23,6 +23,8 @@ A build session works on exactly one task ticket and stops. It never starts a se
 - Unit tests for logic with branches. Component tests for screens with state. Do not test the framework.
 - A test is never deleted or weakened to make a task pass. If a test is wrong, say so in Progress and fix the test in its own commit.
 
+- `e2e/smoke.spec.ts` finds elements by the names in the smoke test contract in [[plan]]. A session may not rename them; if a name has to change, set the task to `blocked` and say why in Progress.
+
 ## Decisions
 
 - A choice the constitution does not cover, and that another task would need to know about, gets an ADR in `docs/adr/` with status `accepted`.
