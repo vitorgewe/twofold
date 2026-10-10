@@ -7,8 +7,8 @@ status: in_progress
 depends_on: ["[[T011-scaffold-expo-app]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
-actual_tokens: 109321
-actual_hours: 0.05
+actual_tokens: 172008
+actual_hours: 0.06
 tags: [task]
 ---
 # T012 SQLite web persistence
