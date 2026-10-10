@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T024-net-worth-and-income-statement]]", "[[T042-save-transaction]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 68863
+actual_hours: 0.03
 tags: [task]
 ---
 # T081 Result screen
