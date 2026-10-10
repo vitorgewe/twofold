@@ -3,7 +3,7 @@ id: T021
 type: task
 feature: "[[F02-ledger-core]]"
 milestone: "[[M1-foundation]]"
-status: todo
+status: review
 depends_on: ["[[T011-scaffold-expo-app]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
@@ -32,13 +32,13 @@ Out of scope: any UI, and storage.
 
 ## Definition of Done
 
-- [ ] `parseAmount("300.00", BRL)` is `30000`; `parseAmount("0.00500000", BTC)` is `500000`; `"1.234"` for BRL and `"-5"` throw
-- [ ] `toBrl(500000, BTC, parseRate("350000"))` is `175000` (0.005 BTC at R$ 350,000 is R$ 1,750.00)
-- [ ] `toBrl(100000, USD, parseRate("5.1234"))` is `512340` (USD 1,000.00 is R$ 5,123.40)
-- [ ] Rounding: `toBrl(1, USD, parseRate("5.5"))` is `6` (5.5 centavos rounds up)
-- [ ] Large values stay exact: `toBrl(2100000000000000, BTC, parseRate("350000"))` is `735000000000000`
-- [ ] `formatAmount(30000, BRL, "en-US")` is `"R$300.00"`
-- [ ] The ADR for the rate representation exists with status accepted
+- [x] `parseAmount("300.00", BRL)` is `30000`; `parseAmount("0.00500000", BTC)` is `500000`; `"1.234"` for BRL and `"-5"` throw
+- [x] `toBrl(500000, BTC, parseRate("350000"))` is `175000` (0.005 BTC at R$ 350,000 is R$ 1,750.00)
+- [x] `toBrl(100000, USD, parseRate("5.1234"))` is `512340` (USD 1,000.00 is R$ 5,123.40)
+- [x] Rounding: `toBrl(1, USD, parseRate("5.5"))` is `6` (5.5 centavos rounds up)
+- [x] Large values stay exact: `toBrl(2100000000000000, BTC, parseRate("350000"))` is `735000000000000`
+- [x] `formatAmount(30000, BRL, "en-US")` is `"R$300.00"`
+- [x] The ADR for the rate representation exists with status accepted
 
 ## Related decisions
 
@@ -46,5 +46,10 @@ Out of scope: any UI, and storage.
 - [[ADR-0006-testing-strategy]]
 
 ## Progress
+
+### 2026-10-10 15:00
+- Done: added `src/features/ledger/currency.ts` and `money.ts` (parseAmount, parseRate, formatAmount, toBrl with BigInt and half-away-from-zero rounding) and ADR-0016 (rates as integers scaled by 10^8). Every DoD value is asserted in `money.test.ts` (20 tests pass); `.relay/verify.sh` passes. The task has no UI, so the proof is the unit tests, not the browser.
+- Failed or surprising: `toBrl` returns a JS number and throws when the result exceeds `Number.MAX_SAFE_INTEGER` (about 9e15 centavos); the 21M BTC case at R$ 350,000 is 7.35e15, so it fits. `formatAmount` falls back to "number code" when Intl has no symbol for the code (BTC).
+- Next: nothing left for this task.
 
 ## QA
