@@ -3,7 +3,7 @@ id: T023
 type: task
 feature: "[[F02-ledger-core]]"
 milestone: "[[M1-foundation]]"
-status: todo
+status: review
 depends_on: ["[[T012-sqlite-web-persistence]]", "[[T021-money-and-currency]]", "[[T022-balance-invariant]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
@@ -71,3 +71,10 @@ Reproduce: run `.relay/init.sh`, open `http://localhost:8081/dbcheck` and reload
 Expected: no such route; `app/` holds real screens only.
 
 Fix: `git rm app/dbcheck.tsx`, then confirm `.relay/verify.sh` prints no lint warnings. Everything else in this task passed: migrations, seeded currencies, and rejection of duplicate name, currency change and unknown currency, all seen in the browser.
+
+## Progress (round 2)
+
+### 2026-10-10 20:30
+- Done: fixed D1 with `git rm app/dbcheck.tsx`; `git ls-files app` now lists only `+html.tsx`, `_layout.tsx`, `index.tsx`. `.relay/verify.sh` passes (74 tests) and prints no lint warnings.
+- Failed or surprising: nothing. I did not reopen the app, since the change only removes a route.
+- Next: nothing; ready for the evaluator.
