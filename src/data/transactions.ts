@@ -3,7 +3,8 @@ import { assertBalanced, InvalidTransactionError, type PostingSide } from '../fe
 import { BRL } from '../features/ledger/currency';
 import { isIsoDate } from '../features/ledger/date';
 import { accountBalances, type AccountBalance, type ReportPosting } from '../features/ledger/reports';
-import { listAccounts } from './accounts';
+import { buildStatement, type StatementRow } from '../features/ledger/statement';
+import { getAccount, listAccounts } from './accounts';
 import { notifyDataChanged } from './changes';
 import { getDatabase, type Database, type SqlValue } from './database';
 import { newId } from './ids';
@@ -204,14 +205,31 @@ export async function listTransactions(db: Database, filter: TransactionFilter =
   return withPostings(db, rows, { clause, params });
 }
 
-/** Postings of one account with their transaction date, oldest first. */
-export async function listPostingsForAccount(db: Database, accountId: string): Promise<(Posting & { date: string })[]> {
-  const rows = await db.query<PostingRow & { date: string }>(
-    `SELECT ${POSTING_COLUMNS}, t.date FROM postings p JOIN transactions t ON t.id = p.transaction_id
+/** Postings of one account with their transaction date and description, oldest first. */
+export async function listPostingsForAccount(
+  db: Database,
+  accountId: string,
+): Promise<(Posting & { date: string; description: string })[]> {
+  const rows = await db.query<PostingRow & { date: string; description: string }>(
+    `SELECT ${POSTING_COLUMNS}, t.date, t.description FROM postings p JOIN transactions t ON t.id = p.transaction_id
      WHERE p.account_id = ? ORDER BY t.date, p.rowid`,
     [accountId],
   );
-  return rows.map((r) => ({ ...toPosting(r), date: r.date }));
+  return rows.map((r) => ({ ...toPosting(r), date: r.date, description: r.description }));
+}
+
+export type AccountStatement = { account: Account; rows: StatementRow[] } | null;
+
+/** The account with its statement rows, newest first; null when the id is unknown. */
+export async function getAccountStatement(db: Database, accountId: string): Promise<AccountStatement> {
+  const account = await getAccount(db, accountId);
+  if (!account) return null;
+  const postings = await listPostingsForAccount(db, accountId);
+  return { account, rows: buildStatement(account.type, postings) };
+}
+
+export function useAccountStatement(accountId: string): QueryState<AccountStatement> {
+  return useQuery(async () => getAccountStatement(await getDatabase(), accountId), [accountId]);
 }
 
 /** Every posting with its date, in the shape the reports take. */

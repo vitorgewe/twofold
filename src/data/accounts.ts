@@ -79,6 +79,14 @@ export async function unarchiveAccount(db: Database, id: string): Promise<void> 
   notifyDataChanged();
 }
 
+export async function getAccount(db: Database, id: string): Promise<Account | null> {
+  const rows = await db.query<AccountRow>(
+    'SELECT id, name, type, currency, archived FROM account WHERE id = ?',
+    [id],
+  );
+  return rows[0] ? toAccount(rows[0]) : null;
+}
+
 export async function listAccounts(
   db: Database,
   options: { includeArchived?: boolean } = {},

@@ -31,6 +31,15 @@ export const strings = {
     adjustNoCounterIncome: 'No income account in BRL exists. Create one first.',
     adjustNoCounterExpense: 'No expense account in BRL exists. Create one first.',
     adjustDescription: (name: string) => `Value adjustment: ${name}`,
+    statement: {
+      back: 'Back to accounts',
+      emptyTitle: 'No postings yet',
+      emptyBody: 'Transactions that touch this account will show up here.',
+      notFoundTitle: 'Account not found',
+      notFoundBody: 'No account has this id. It may have been removed.',
+      balance: 'Balance',
+      open: (name: string) => `Open statement of ${name}`,
+    },
     types: {
       asset: 'Asset',
       liability: 'Liability',

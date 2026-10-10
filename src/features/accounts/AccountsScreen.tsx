@@ -1,3 +1,4 @@
+import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
@@ -110,7 +111,13 @@ function AccountRow({ account, accounts }: { account: AccountWithBalance; accoun
           />
         ) : (
           <View style={styles.nameBlock}>
-            <Text style={styles.name}>{account.name}</Text>
+            <Link
+              href={{ pathname: '/accounts/[id]', params: { id: account.id } }}
+              accessibilityLabel={strings.accounts.statement.open(account.name)}
+              style={styles.name}
+            >
+              {account.name}
+            </Link>
             {account.archived && <Text style={styles.muted}>{strings.accounts.archivedTag}</Text>}
           </View>
         )}
