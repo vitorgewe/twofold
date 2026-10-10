@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T041-transaction-form]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 95012
+actual_hours: 0.08
 tags: [task]
 ---
 # T042 Save transaction
