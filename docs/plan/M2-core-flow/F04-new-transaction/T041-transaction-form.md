@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T021-money-and-currency]]", "[[T022-balance-invariant]]", "[[T025-transactions-and-rates-repositories]]", "[[T031-accounts-screen]]"]
 estimate_tokens: 800000
 estimate_hours: 1
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 84844
+actual_hours: 0.04
 tags: [task]
 ---
 # T041 Transaction form
