@@ -24,7 +24,7 @@ The author wants releases to be versioned and published by automation, not by ha
 
 Option 1.
 
-- Versions follow SemVer. The manifest starts at `0.0.0`, so the first `feat:` produces `0.1.0` and the first `fix:` `0.0.1`. While the major version is 0, breaking changes bump the minor number. `1.0.0` is a deliberate decision, not an automatic one.
+- Versions follow SemVer. The manifest starts at `0.0.0` and the config sets `initial-version` to `0.1.0`. Without that setting release-please treats a repository with no earlier release as a first release and proposes `1.0.0` (this happened on the first release pull request, which was not merged). With it, the first release is `0.1.0`. While the major version is 0, breaking changes bump the minor number. `1.0.0` is a deliberate decision, not an automatic one.
 - Commits that reach `main` use Conventional Commits. Pull requests are squash merged so the pull request title is the commit message, and a CI job checks that title.
 - `docs:`, `ci:` and `chore:` commits do not create a release.
 - The release workflow runs on every push to `main` with the `RELEASE_PLEASE_TOKEN` secret, a fine-grained token limited to this repository with contents and pull requests write access.
