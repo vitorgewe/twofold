@@ -35,6 +35,10 @@ Agents read this at the start of every session and may not edit it.
 
 - Code, docs, commits and UI text are in English; UI strings live in `src/ui/strings`. [[ADR-0012-english-only]]
 
+## Release
+
+- Versions follow SemVer and are bumped by release-please from Conventional Commits. The bump arrives as a release pull request that the author merges; nothing pushes to `main`. [[ADR-0014-versioning-and-release]]
+
 ## Boundaries
 
 - No custom native modules and no ejecting from the managed workflow. [[ADR-0001-expo-managed-typescript]]
