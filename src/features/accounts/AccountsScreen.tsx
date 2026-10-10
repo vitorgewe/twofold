@@ -5,11 +5,13 @@ import { AccountError, archiveAccount, renameAccount, unarchiveAccount } from '@
 import { getDatabase } from '@/data/database';
 import { useAccountsWithBalances, type AccountWithBalance } from '@/data/transactions';
 import { ACCOUNT_TYPES } from '@/features/ledger/account-types';
+import { canAdjustValue } from '@/features/ledger/adjustment';
 import { BRL, BTC, USD } from '@/features/ledger/currency';
 import { MoneyText } from '@/ui/MoneyText';
 import { strings } from '@/ui/strings';
 
 import { AccountForm } from './AccountForm';
+import { AdjustValueForm } from './AdjustValueForm';
 import { validateAccountName } from './validate';
 
 const CURRENCIES = { BRL, USD, BTC };
@@ -58,7 +60,7 @@ export function AccountsScreen() {
               {strings.accounts.types[type]}
             </Text>
             {group.map((account) => (
-              <AccountRow key={account.id} account={account} />
+              <AccountRow key={account.id} account={account} accounts={accounts ?? []} />
             ))}
           </View>
         );
@@ -67,8 +69,9 @@ export function AccountsScreen() {
   );
 }
 
-function AccountRow({ account }: { account: AccountWithBalance }) {
+function AccountRow({ account, accounts }: { account: AccountWithBalance; accounts: AccountWithBalance[] }) {
   const [renaming, setRenaming] = useState(false);
+  const [adjusting, setAdjusting] = useState(false);
   const [name, setName] = useState(account.name);
   const [error, setError] = useState<string | null>(null);
 
@@ -124,6 +127,8 @@ function AccountRow({ account }: { account: AccountWithBalance }) {
         </Text>
       )}
 
+      {adjusting && <AdjustValueForm account={account} accounts={accounts} onDone={() => setAdjusting(false)} />}
+
       <View style={styles.actions}>
         {renaming ? (
           <>
@@ -140,6 +145,9 @@ function AccountRow({ account }: { account: AccountWithBalance }) {
         ) : (
           <>
             <RowButton label={strings.accounts.rename} onPress={() => setRenaming(true)} />
+            {!account.archived && canAdjustValue(account) && (
+              <RowButton label={strings.accounts.adjustValue} onPress={() => setAdjusting(true)} />
+            )}
             {account.archived ? (
               <RowButton
                 label={strings.accounts.unarchive}
