@@ -3,3 +3,11 @@
 .env.*
 .vscode/
 .idea/
+node_modules/
+dist/
+.expo/
+.relay/runs/
+docs/BLOCKED.md
+docs/.obsidian/workspace*
+test-results/
+playwright-report/

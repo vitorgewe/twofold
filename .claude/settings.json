@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "mcp__playwright",
+      "Bash(.relay/init.sh*)",
+      "Bash(.relay/verify.sh*)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git restore *)",
+      "Bash(git mv *)",
+      "Bash(git rm *)",
+      "Bash(ls*)",
+      "Bash(mkdir *)",
+      "Bash(curl http://localhost*)",
+      "Bash(lsof *)",
+      "Bash(kill *)"
+    ],
+    "deny": [
+      "Edit(/docs/constitution.md)",
+      "Write(/docs/constitution.md)",
+      "Edit(/e2e/smoke.spec.ts)",
+      "Write(/e2e/smoke.spec.ts)",
+      "Bash(git push*)",
+      "Bash(git merge*)",
+      "Bash(git checkout*)",
+      "Bash(git switch*)",
+      "Bash(git reset*)",
+      "Bash(gh *)",
+      "Bash(eas *)",
+      "Bash(npx eas*)",
+      "Bash(npx -y eas*)",
+      "Bash(.relay/deploy.sh*)",
+      "Bash(sudo *)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~*)"
+    ]
+  }
+}
