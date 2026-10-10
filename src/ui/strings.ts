@@ -2,6 +2,12 @@ export const strings = {
   home: {
     title: 'Twofold',
     newTransaction: 'New transaction',
+    netWorth: 'Net worth',
+    monthResult: 'Result this month',
+    balances: 'Balances',
+    noBackup: 'No backup yet',
+    lastBackup: (days: number) =>
+      days === 0 ? 'Last backup today' : days === 1 ? 'Last backup 1 day ago' : `Last backup ${days} days ago`,
   },
   transactions: {
     newTitle: 'New transaction',
