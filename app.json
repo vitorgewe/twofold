@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "twofold",
+    "slug": "twofold",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "scheme": "twofold",
+    "userInterfaceStyle": "automatic",
+    "web": {
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

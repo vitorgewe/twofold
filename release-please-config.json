@@ -5,7 +5,11 @@
       "release-type": "simple",
       "changelog-path": "CHANGELOG.md",
       "include-component-in-tag": false,
-      "bump-minor-pre-major": true
+      "bump-minor-pre-major": true,
+      "extra-files": [
+        { "type": "json", "path": "package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "app.json", "jsonpath": "$.expo.version" }
+      ]
     }
   }
 }

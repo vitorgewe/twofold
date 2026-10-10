@@ -3,12 +3,12 @@ id: T022
 type: task
 feature: "[[F02-ledger-core]]"
 milestone: "[[M1-foundation]]"
-status: todo
+status: done
 depends_on: ["[[T021-money-and-currency]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 37987
+actual_hours: 0.01
 tags: [task]
 ---
 # T022 Balance invariant
@@ -32,10 +32,10 @@ Out of scope: storage, and currency conversion (done in T021).
 
 ## Definition of Done
 
-- [ ] One credit of 100000 and three debits of 40000, 35000 and 25000 is balanced; changing one debit by 1 makes it unbalanced with difference 1
-- [ ] A single posting, only debits, all zeros, and negative or fractional amounts are rejected
-- [ ] A randomized test with a seeded generator and at least 1000 cases: generated balanced transactions pass in any posting order, and changing any one amount by 1 makes them fail
-- [ ] A test or lint rule shows the module has no React Native, Expo or `src/data/` imports
+- [x] One credit of 100000 and three debits of 40000, 35000 and 25000 is balanced; changing one debit by 1 makes it unbalanced with difference 1
+- [x] A single posting, only debits, all zeros, and negative or fractional amounts are rejected
+- [x] A randomized test with a seeded generator and at least 1000 cases: generated balanced transactions pass in any posting order, and changing any one amount by 1 makes them fail
+- [x] A test or lint rule shows the module has no React Native, Expo or `src/data/` imports
 
 ## Related decisions
 
@@ -44,5 +44,10 @@ Out of scope: storage, and currency conversion (done in T021).
 - [[ADR-0006-testing-strategy]]
 
 ## Progress
+
+### 2026-10-10 12:00
+- Done: added `src/features/ledger/balance.ts` (`balanceDifference`, `isBalanced`, `assertBalanced`, `UnbalancedTransactionError` with `difference`, plus `InvalidTransactionError` for malformed transactions) and `balance.test.ts` (13 tests: the 100000/40000/35000/25000 example, rejections, 1500 seeded random cases with shuffles and ±1 changes, import-scan test). `npx jest` on it passes and `.relay/verify.sh` prints `verify: ok`. This is a pure module with no screen, so the Playwright check does not apply; the tests are the proof.
+- Failed or surprising: nothing. Decision: structural problems (fewer than two postings, no debit/credit, bad amounts, all zeros) throw `InvalidTransactionError`; only a non-zero difference throws `UnbalancedTransactionError`. `isBalanced` returns false for both.
+- Next: callers (T023 onward) should catch both error classes when showing messages.
 
 ## QA
