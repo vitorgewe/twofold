@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T023-database-schema-and-accounts-repository]]", "[[T024-net-worth-and-income-statement]]", "[[T025-transactions-and-rates-repositories]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 63016
+actual_hours: 0.04
 tags: [task]
 ---
 # T031 Accounts screen
