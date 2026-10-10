@@ -87,6 +87,37 @@ describe('TransactionForm', () => {
     expect(screen.queryByRole('button', { name: /Remove posting/ })).toBeNull();
   });
 
+  it('does not submit again after a successful save', async () => {
+    const onSubmit = jest.fn(() => new Promise<void>((resolve) => setTimeout(resolve, 50)));
+    await render(<TransactionForm onSubmit={onSubmit} />);
+    await fireEvent.changeText(screen.getByLabelText('Description'), 'Groceries');
+    await fill(1, 'Checking', 'Credit', '90.00');
+    await fill(2, 'Checking', 'Debit', '90.00');
+    // The first press resolves, the screen has not navigated yet, and a late tap must not save again.
+    // The overlap of two taps while the save is pending is covered in e2e/new-transaction.spec.ts.
+    await fireEvent.press(save());
+    await fireEvent.press(save());
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(save()).toBeDisabled();
+  });
+
+  it('shows the error of a rejected save and keeps the form values', async () => {
+    const onSubmit = jest.fn().mockRejectedValueOnce(new Error('account is archived')).mockResolvedValue(undefined);
+    await render(<TransactionForm onSubmit={onSubmit} />);
+    await fireEvent.changeText(screen.getByLabelText('Description'), 'Groceries');
+    await fill(1, 'Checking', 'Credit', '90.00');
+    await fill(2, 'Checking', 'Debit', '90.00');
+    await fireEvent.press(save());
+    expect(await screen.findByText('account is archived')).toBeTruthy();
+    expect(screen.getByLabelText('Description').props.value).toBe('Groceries');
+    expect(within(row(1)).getByLabelText('Amount').props.value).toBe('90.00');
+    expect(save()).toBeEnabled();
+
+    await fireEvent.press(save());
+    expect(onSubmit).toHaveBeenCalledTimes(2);
+    expect(screen.queryByText('account is archived')).toBeNull();
+  });
+
   it('submits the draft when balanced', async () => {
     const onSubmit = jest.fn();
     await render(<TransactionForm onSubmit={onSubmit} />);

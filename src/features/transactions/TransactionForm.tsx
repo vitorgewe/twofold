@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useAccountsWithBalances, type TransactionInput } from '@/data/transactions';
@@ -19,7 +19,8 @@ const todayIso = (): string => {
 };
 
 type Props = {
-  onSubmit: (draft: TransactionInput) => void;
+  /** Resolves when the transaction is stored; a rejection is shown and the form keeps its values. */
+  onSubmit: (draft: TransactionInput) => void | Promise<void>;
 };
 
 export function TransactionForm({ onSubmit }: Props) {
@@ -30,6 +31,10 @@ export function TransactionForm({ onSubmit }: Props) {
   const [rows, setRows] = useState<PostingRow[]>([emptyRow(1), emptyRow(2)]);
   const [nextKey, setNextKey] = useState(3);
   const [openKey, setOpenKey] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  // A ref, not state: two taps in the same frame both see the stale `saving` value.
+  const inFlight = useRef(false);
 
   const update = (key: number, patch: Partial<PostingRow>) =>
     setRows((current) => current.map((row) => (row.key === key ? { ...row, ...patch } : row)));
@@ -50,19 +55,29 @@ export function TransactionForm({ onSubmit }: Props) {
   const canSave =
     description.trim() !== '' && isIsoDate(date) && allComplete && isBalanced(postings) && summary.difference === 0;
 
-  const submit = () => {
-    if (!canSave) return;
-    onSubmit({
-      date,
-      description: description.trim(),
-      postings: evaluated.map(({ row, account, result }) => ({
-        accountId: account!.id,
-        side: row.side,
-        amount: result.amount!,
-        rate: result.currency!.code === BRL.code ? null : result.rate,
-        amountBrl: result.amountBrl!,
-      })),
-    });
+  const submit = async () => {
+    if (!canSave || inFlight.current) return;
+    inFlight.current = true;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await onSubmit({
+        date,
+        description: description.trim(),
+        postings: evaluated.map(({ row, account, result }) => ({
+          accountId: account!.id,
+          side: row.side,
+          amount: result.amount!,
+          rate: result.currency!.code === BRL.code ? null : result.rate,
+          amountBrl: result.amountBrl!,
+        })),
+      });
+      // On success the screen navigates away; the guard stays on so a late tap cannot save twice.
+    } catch (e) {
+      setSaveError(e instanceof Error && e.message ? e.message : t.saveFailed);
+      inFlight.current = false;
+      setSaving(false);
+    }
   };
 
   return (
@@ -213,12 +228,13 @@ export function TransactionForm({ onSubmit }: Props) {
         </Text>
       </View>
 
+      {saveError !== null && <Text style={styles.error}>{saveError}</Text>}
       <Pressable
         accessibilityRole="button"
-        accessibilityState={{ disabled: !canSave }}
-        disabled={!canSave}
+        accessibilityState={{ disabled: !canSave || saving }}
+        disabled={!canSave || saving}
         onPress={submit}
-        style={[styles.button, styles.primary, !canSave && styles.disabled]}
+        style={[styles.button, styles.primary, (!canSave || saving) && styles.disabled]}
       >
         <Text style={styles.primaryText}>{t.save}</Text>
       </Pressable>

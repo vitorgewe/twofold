@@ -20,6 +20,7 @@ export const strings = {
     totalCredits: 'Total credits',
     difference: 'Difference',
     save: 'Save transaction',
+    saveFailed: 'Could not save the transaction.',
     amountInvalid: (code: string, decimals: number) =>
       `Enter a positive amount with up to ${decimals} decimals for ${code}.`,
     rateInvalid: 'Enter a positive rate with up to 8 decimals.',
