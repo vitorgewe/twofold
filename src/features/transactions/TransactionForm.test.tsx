@@ -118,6 +118,43 @@ describe('TransactionForm', () => {
     expect(screen.queryByText('account is archived')).toBeNull();
   });
 
+  it('starts filled with a stored transaction and blocks saving while one side changes', async () => {
+    const onSubmit = jest.fn();
+    const initial = {
+      id: 't1',
+      date: '2026-10-01',
+      description: 'Groceries',
+      postings: [
+        { id: 'p1', transactionId: 't1', accountId: 'brl', side: 'credit' as const, amount: 10000, rate: null, amountBrl: 10000 },
+        { id: 'p2', transactionId: 't1', accountId: 'usd', side: 'debit' as const, amount: 2000, rate: 500000000, amountBrl: 10000 },
+      ],
+    };
+    await render(<TransactionForm initial={initial} onSubmit={onSubmit} />);
+    expect(screen.getByLabelText('Description').props.value).toBe('Groceries');
+    expect(screen.getByLabelText('Date').props.value).toBe('2026-10-01');
+    expect(within(row(1)).getByLabelText('Amount').props.value).toBe('100.00');
+    expect(within(row(2)).getByLabelText('Amount').props.value).toBe('20.00');
+    expect(within(row(2)).getByLabelText('Rate').props.value).toBe('5.0');
+    expect(within(row(2)).getByLabelText('BRL value').props.value).toBe('100.00');
+    expect(save()).toBeEnabled();
+
+    await fireEvent.changeText(within(row(1)).getByLabelText('Amount'), '130.00');
+    expect(screen.getByTestId('difference')).toHaveTextContent(/30[.,]00/);
+    expect(save()).toBeDisabled();
+
+    await fireEvent.changeText(within(row(2)).getByLabelText('Amount'), '26.00');
+    expect(save()).toBeEnabled();
+    await fireEvent.press(save());
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        postings: [
+          { accountId: 'brl', side: 'credit', amount: 13000, rate: null, amountBrl: 13000 },
+          { accountId: 'usd', side: 'debit', amount: 2600, rate: 500000000, amountBrl: 13000 },
+        ],
+      }),
+    );
+  });
+
   it('submits the draft when balanced', async () => {
     const onSubmit = jest.fn();
     await render(<TransactionForm onSubmit={onSubmit} />);

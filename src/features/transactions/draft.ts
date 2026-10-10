@@ -50,6 +50,35 @@ export function formatBrlPlain(centavos: number): string {
   return centavos < 0 ? `-${text}` : text;
 }
 
+/** Plain decimal text for minor units, such as "0.00500000" for 500000 satoshis. */
+function formatPlain(minor: number, decimals: number): string {
+  const scale = 10 ** decimals;
+  const whole = Math.floor(minor / scale);
+  return decimals === 0 ? String(whole) : `${whole}.${String(minor % scale).padStart(decimals, '0')}`;
+}
+
+type StoredPosting = { accountId: string; side: PostingSide; amount: number; rate: number | null; amountBrl: number };
+
+/** Form rows for the postings of a stored transaction; `currencyOfAccount` gives the currency code of an account id. */
+export function rowsFromPostings(
+  postings: readonly StoredPosting[],
+  currencyOfAccount: (accountId: string) => string | null,
+): PostingRow[] {
+  return postings.map((p, index) => {
+    const currency = currencyOf(currencyOfAccount(p.accountId) ?? BRL.code) ?? BRL;
+    const foreign = currency.code !== BRL.code;
+    return {
+      key: index + 1,
+      accountId: p.accountId,
+      side: p.side,
+      amountText: formatPlain(p.amount, currency.decimals),
+      rateText: foreign && p.rate !== null ? formatPlain(p.rate, 8).replace(/0+$/, '').replace(/\.$/, '.0') : '',
+      // Keep the stored BRL value, which may differ by a centavo from amount times rate.
+      brlText: foreign ? formatBrlPlain(p.amountBrl) : null,
+    };
+  });
+}
+
 /** Works out the typed values of one row; `currencyCode` is the currency of its account, if one is chosen. */
 export function evaluateRow(row: PostingRow, currencyCode: string | null): RowResult {
   const currency = currencyCode ? (currencyOf(currencyCode) ?? null) : null;

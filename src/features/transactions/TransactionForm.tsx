@@ -1,14 +1,22 @@
 import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { useAccountsWithBalances, type TransactionInput } from '@/data/transactions';
+import { useAccountsWithBalances, type Transaction, type TransactionInput } from '@/data/transactions';
 import type { PostingDraft } from '@/features/ledger/balance';
 import { BRL } from '@/features/ledger/currency';
 import { isIsoDate } from '@/features/ledger/date';
 import { formatAmount } from '@/features/ledger/money';
 import { strings } from '@/ui/strings';
 
-import { emptyRow, evaluateRow, formatBrlPlain, isBalanced, summarize, type PostingRow } from './draft';
+import {
+  emptyRow,
+  evaluateRow,
+  formatBrlPlain,
+  isBalanced,
+  rowsFromPostings,
+  summarize,
+  type PostingRow,
+} from './draft';
 
 const t = strings.transactions;
 
@@ -21,15 +29,22 @@ const todayIso = (): string => {
 type Props = {
   /** Resolves when the transaction is stored; a rejection is shown and the form keeps its values. */
   onSubmit: (draft: TransactionInput) => void | Promise<void>;
+  /** A stored transaction to edit; the form starts filled with it. Mount it once the accounts have loaded. */
+  initial?: Transaction;
+  onCancel?: () => void;
 };
 
-export function TransactionForm({ onSubmit }: Props) {
-  const { data } = useAccountsWithBalances();
-  const accounts = (data ?? []).filter((a) => !a.archived);
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState(todayIso());
-  const [rows, setRows] = useState<PostingRow[]>([emptyRow(1), emptyRow(2)]);
-  const [nextKey, setNextKey] = useState(3);
+export function TransactionForm({ onSubmit, initial, onCancel }: Props) {
+  const { data } = useAccountsWithBalances({ includeArchived: initial !== undefined });
+  const accounts = (data ?? []).filter((a) => !a.archived || initial?.postings.some((p) => p.accountId === a.id));
+  const [description, setDescription] = useState(initial?.description ?? '');
+  const [date, setDate] = useState(initial?.date ?? todayIso());
+  const [rows, setRows] = useState<PostingRow[]>(() =>
+    initial
+      ? rowsFromPostings(initial.postings, (id) => (data ?? []).find((a) => a.id === id)?.currency ?? null)
+      : [emptyRow(1), emptyRow(2)],
+  );
+  const [nextKey, setNextKey] = useState(initial ? initial.postings.length + 1 : 3);
   const [openKey, setOpenKey] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -83,7 +98,7 @@ export function TransactionForm({ onSubmit }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text accessibilityRole="header" style={styles.title}>
-        {t.newTitle}
+        {initial ? t.editTitle : t.newTitle}
       </Text>
 
       <Text style={styles.label}>{t.description}</Text>
@@ -238,6 +253,11 @@ export function TransactionForm({ onSubmit }: Props) {
       >
         <Text style={styles.primaryText}>{t.save}</Text>
       </Pressable>
+      {onCancel && (
+        <Pressable accessibilityRole="button" onPress={onCancel} style={styles.button}>
+          <Text>{t.cancel}</Text>
+        </Pressable>
+      )}
     </ScrollView>
   );
 }
