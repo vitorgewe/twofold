@@ -3,7 +3,7 @@ id: T023
 type: task
 feature: "[[F02-ledger-core]]"
 milestone: "[[M1-foundation]]"
-status: todo
+status: review
 depends_on: ["[[T012-sqlite-web-persistence]]", "[[T021-money-and-currency]]", "[[T022-balance-invariant]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
@@ -40,11 +40,11 @@ Out of scope: transactions, postings and rates repositories (T025), and any scre
 
 ## Definition of Done
 
-- [ ] Jest: the migrations create all tables on an empty database, are idempotent, and seed BRL 2, USD 2, BTC 8
-- [ ] Jest: create, rename, archive and list accounts work; a duplicate active name, an unknown currency and a currency change are rejected
-- [ ] Jest component test: a component using `useQuery` shows new data after a repository write, without a reload
-- [ ] Ids are UUID v4 strings
-- [ ] `.relay/verify.sh` passes
+- [x] Jest: the migrations create all tables on an empty database, are idempotent, and seed BRL 2, USD 2, BTC 8
+- [x] Jest: create, rename, archive and list accounts work; a duplicate active name, an unknown currency and a currency change are rejected
+- [x] Jest component test: a component using `useQuery` shows new data after a repository write, without a reload
+- [x] Ids are UUID v4 strings
+- [x] `.relay/verify.sh` passes
 
 ## Related decisions
 
@@ -54,5 +54,10 @@ Out of scope: transactions, postings and rates repositories (T025), and any scre
 - [[ADR-0008-uuid-identifiers]]
 
 ## Progress
+
+### 2026-10-10 19:45
+- Done: migration 2 (`src/data/migrations/002-ledger.ts`), `ids.ts`, `changes.ts`, `useQuery.ts`, `meta.ts`, `accounts.ts`, with tests in `accounts.test.ts` and `useQuery.test.tsx`. `.relay/verify.sh` passes (59 tests). Foreign keys are switched on with `PRAGMA foreign_keys = ON` in both the expo-sqlite open and the sql.js test adapter, so postings cascade with their transaction. Currency immutability is a DB trigger; active-name uniqueness is a partial unique index on `lower(name)` plus a repository check with a readable error. Checked in the real web app (390x844) through a throwaway route: seeded currencies present, account created, duplicate name, currency change and unknown-currency insert all rejected by expo-sqlite, and the account count went 1 to 2 after a reload (data persisted).
+- Failed or surprising: Expo Router only sees new routes after `.relay/init.sh --restart`. `rm` is refused, so the throwaway route `app/dbcheck.tsx` (untracked, not committed) is still in the working tree and must be deleted by a human. `newId` uses `crypto.randomUUID`, falling back to `getRandomValues`, then `Math.random`, for runtimes without it.
+- Next: delete `app/dbcheck.tsx`. T025 builds the transactions, postings and rates repositories on this schema; nothing calls `getDatabase()` from a screen yet.
 
 ## QA

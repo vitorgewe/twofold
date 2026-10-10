@@ -1,5 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
+import { ledgerMigration } from './migrations/002-ledger';
+
 export type SqlValue = string | number | null;
 
 export interface Database {
@@ -18,6 +20,7 @@ export const migrations: Migration[] = [
     version: 1,
     up: (db) => db.run('CREATE TABLE meta (key text primary key, value text)'),
   },
+  ledgerMigration,
 ];
 
 export async function runMigrations(db: Database, list: Migration[]): Promise<void> {
@@ -49,6 +52,7 @@ export function getDatabase(): Promise<Database> {
 
 async function open(): Promise<Database> {
   const native = await SQLite.openDatabaseAsync(DATABASE_NAME);
+  await native.execAsync('PRAGMA foreign_keys = ON');
   const db: Database = {
     run: async (sql, params = []) => {
       await native.runAsync(sql, params);

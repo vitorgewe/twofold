@@ -6,6 +6,7 @@ import type { Database, SqlValue } from './database';
 export async function createTestDatabase(): Promise<Database> {
   const SQL = await initSqlJs();
   const raw: SqlJsDatabase = new SQL.Database();
+  raw.run('PRAGMA foreign_keys = ON');
   return {
     run: async (sql, params = []) => {
       raw.run(sql, params);
