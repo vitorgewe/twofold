@@ -6,10 +6,10 @@ import { migrations, runMigrations, type Database } from '@/data/database';
 import { createTestDatabase } from '@/data/sqljs-adapter';
 import { listTransactions } from '@/data/transactions';
 
-const mockReplace = jest.fn();
+const mockDismissTo = jest.fn();
 let mockDb: Database;
 
-jest.mock('expo-router', () => ({ useRouter: () => ({ replace: mockReplace }) }));
+jest.mock('expo-router', () => ({ useRouter: () => ({ dismissTo: mockDismissTo }) }));
 jest.mock('@/data/database', () => ({
   ...jest.requireActual('@/data/database'),
   getDatabase: async () => mockDb,
@@ -26,7 +26,7 @@ async function fill(n: number, accountName: string, side: 'Debit' | 'Credit', am
 
 describe('saving from the new-transaction route', () => {
   beforeEach(async () => {
-    mockReplace.mockClear();
+    mockDismissTo.mockClear();
     mockDb = await createTestDatabase();
     await runMigrations(mockDb, migrations);
   });
@@ -40,7 +40,7 @@ describe('saving from the new-transaction route', () => {
     await fill(2, 'Food', 'Debit', '42.50');
     await fireEvent.press(screen.getByRole('button', { name: 'Save transaction' }));
 
-    expect(mockReplace).toHaveBeenCalledWith('/');
+    expect(mockDismissTo).toHaveBeenCalledWith('/');
     const stored = await listTransactions(mockDb);
     expect(stored).toHaveLength(1);
     expect(stored[0].description).toBe('Lunch');
@@ -58,7 +58,7 @@ describe('saving from the new-transaction route', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Save transaction' }));
 
     expect(await screen.findByText(/archived/)).toBeTruthy();
-    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockDismissTo).not.toHaveBeenCalled();
     expect(screen.getByLabelText('Description').props.value).toBe('Lunch');
     expect(within(row(2)).getByLabelText('Amount').props.value).toBe('42.50');
     expect(await listTransactions(mockDb)).toHaveLength(0);

@@ -8,7 +8,8 @@ export default function NewTransaction() {
   const router = useRouter();
   const save = async (draft: TransactionInput) => {
     await createTransaction(await getDatabase(), draft);
-    router.replace('/');
+    // Pops back to the Home already in the stack; replace('/') left a second Home mounted under it.
+    router.dismissTo('/');
   };
   return <TransactionForm onSubmit={save} />;
 }
