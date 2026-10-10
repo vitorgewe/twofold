@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T012-sqlite-web-persistence]]", "[[T021-money-and-currency]]", "[[T022-balance-invariant]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 72660
+actual_hours: 0.05
 tags: [task]
 ---
 # T023 Database schema and accounts repository
