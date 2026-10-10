@@ -1,6 +1,31 @@
 export const strings = {
   home: {
     title: 'Twofold',
+    newTransaction: 'New transaction',
+  },
+  transactions: {
+    newTitle: 'New transaction',
+    description: 'Description',
+    date: 'Date',
+    account: 'Account',
+    accountPlaceholder: 'Choose an account',
+    debit: 'Debit',
+    credit: 'Credit',
+    amount: 'Amount',
+    rate: 'Rate',
+    brlValue: 'BRL value',
+    addPosting: 'Add posting',
+    removePosting: 'Remove posting',
+    totalDebits: 'Total debits',
+    totalCredits: 'Total credits',
+    difference: 'Difference',
+    save: 'Save transaction',
+    amountInvalid: (code: string, decimals: number) =>
+      `Enter a positive amount with up to ${decimals} decimals for ${code}.`,
+    rateInvalid: 'Enter a positive rate with up to 8 decimals.',
+    brlInvalid: 'Enter a positive BRL value such as 520.00.',
+    dateInvalid: 'Enter the date as YYYY-MM-DD.',
+    noAccounts: 'No active accounts. Create accounts first.',
   },
   accounts: {
     title: 'Accounts',

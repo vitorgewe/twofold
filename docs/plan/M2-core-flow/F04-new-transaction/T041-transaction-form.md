@@ -3,7 +3,7 @@ id: T041
 type: task
 feature: "[[F04-new-transaction]]"
 milestone: "[[M2-core-flow]]"
-status: todo
+status: review
 depends_on: ["[[T021-money-and-currency]]", "[[T022-balance-invariant]]", "[[T025-transactions-and-rates-repositories]]", "[[T031-accounts-screen]]"]
 estimate_tokens: 800000
 estimate_hours: 1
@@ -35,12 +35,12 @@ Out of scope: writing to the database (T042), prefilled rates (T071), editing (T
 
 ## Definition of Done
 
-- [ ] One credit of R$ 1,000.00 and three debits of 400.00, 350.00 and 250.00: the summary shows a difference of 0.00 and "Save transaction" is enabled. Changing the last debit to 249.99 shows a difference of 0.01 and disables it
-- [ ] A BTC posting accepts `0.00500000` and rejects `0.005000001`; a BRL posting rejects `1.234`
-- [ ] A USD posting of 100.00 with rate 5.20 shows BRL value 520.00; editing it to 520.01 changes the summary accordingly
-- [ ] Archived accounts are not offered; removing a posting never leaves fewer than two
-- [ ] With four postings at 390 x 844 nothing is clipped or overlapping and there is no horizontal scroll
-- [ ] Jest component tests for the validation and the difference summary; the control names match the contract in [[plan]]
+- [x] One credit of R$ 1,000.00 and three debits of 400.00, 350.00 and 250.00: the summary shows a difference of 0.00 and "Save transaction" is enabled. Changing the last debit to 249.99 shows a difference of 0.01 and disables it
+- [x] A BTC posting accepts `0.00500000` and rejects `0.005000001`; a BRL posting rejects `1.234`
+- [x] A USD posting of 100.00 with rate 5.20 shows BRL value 520.00; editing it to 520.01 changes the summary accordingly
+- [x] Archived accounts are not offered; removing a posting never leaves fewer than two
+- [x] With four postings at 390 x 844 nothing is clipped or overlapping and there is no horizontal scroll
+- [x] Jest component tests for the validation and the difference summary; the control names match the contract in [[plan]]
 
 ## Related decisions
 
@@ -50,5 +50,10 @@ Out of scope: writing to the database (T042), prefilled rates (T071), editing (T
 - [[ADR-0012-english-only]]
 
 ## Progress
+
+### 2026-10-10 22:30
+- Done: `TransactionForm` (`src/features/transactions/`), pure row/summary logic in `draft.ts`, route `app/transactions/new.tsx`, Home "New transaction" button, strings. Checked at 390 x 844 with Playwright: 1000 credit vs 400/350/250 debits gives difference R$0.00 and enables Save; 249.99 disables it; BTC 0.005000001 and BRL 1.234 are rejected, 0.00500000 accepted; USD 100.00 at 5.20 shows 520.00, overwrite to 520.01 moves the totals; archived account not offered; no remove button with two rows; scrollWidth equals viewport width with four postings. `.relay/verify.sh` passes.
+- Failed or surprising: the difference is signed debits minus credits, so 249.99 shows -R$0.01 (magnitude 0.01 as the DoD says). Typed routes failed typecheck until `.relay/init.sh --restart` regenerated them. The route passes a no-op `onSubmit`; T042 must wire it. Editing amount or rate clears a typed BRL override. Only the form was exercised in the browser, not the full smoke test (needs T042 and T051).
+- Next: T042 wires `onSubmit` to `createTransaction`.
 
 ## QA
