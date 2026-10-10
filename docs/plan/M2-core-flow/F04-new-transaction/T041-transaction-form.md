@@ -3,7 +3,7 @@ id: T041
 type: task
 feature: "[[F04-new-transaction]]"
 milestone: "[[M2-core-flow]]"
-status: review
+status: done
 depends_on: ["[[T021-money-and-currency]]", "[[T022-balance-invariant]]", "[[T025-transactions-and-rates-repositories]]", "[[T031-accounts-screen]]"]
 estimate_tokens: 800000
 estimate_hours: 1

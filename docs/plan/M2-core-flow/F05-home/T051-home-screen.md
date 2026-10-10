@@ -3,7 +3,7 @@ id: T051
 type: task
 feature: "[[F05-home]]"
 milestone: "[[M2-core-flow]]"
-status: review
+status: done
 depends_on: ["[[T024-net-worth-and-income-statement]]", "[[T042-save-transaction]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5

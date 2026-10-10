@@ -3,7 +3,7 @@ id: T031
 type: task
 feature: "[[F03-accounts]]"
 milestone: "[[M2-core-flow]]"
-status: review
+status: done
 depends_on: ["[[T023-database-schema-and-accounts-repository]]", "[[T024-net-worth-and-income-statement]]", "[[T025-transactions-and-rates-repositories]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5

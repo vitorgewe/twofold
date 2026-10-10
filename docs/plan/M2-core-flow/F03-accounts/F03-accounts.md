@@ -2,7 +2,7 @@
 id: F03
 type: feature
 milestone: "[[M2-core-flow]]"
-status: todo
+status: done
 estimate_tokens: 1200000
 estimate_hours: 1.5
 tags: [feature]

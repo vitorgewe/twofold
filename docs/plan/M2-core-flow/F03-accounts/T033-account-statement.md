@@ -3,7 +3,7 @@ id: T033
 type: task
 feature: "[[F03-accounts]]"
 milestone: "[[M2-core-flow]]"
-status: review
+status: done
 depends_on: ["[[T031-accounts-screen]]", "[[T032-adjust-value]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5

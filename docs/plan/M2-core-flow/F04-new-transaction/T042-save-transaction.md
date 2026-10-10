@@ -3,7 +3,7 @@ id: T042
 type: task
 feature: "[[F04-new-transaction]]"
 milestone: "[[M2-core-flow]]"
-status: review
+status: done
 depends_on: ["[[T041-transaction-form]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
