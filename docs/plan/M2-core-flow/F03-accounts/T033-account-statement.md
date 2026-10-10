@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T031-accounts-screen]]", "[[T032-adjust-value]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 79961
+actual_hours: 0.04
 tags: [task]
 ---
 # T033 Account statement
