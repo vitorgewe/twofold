@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T011-scaffold-expo-app]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
-actual_tokens: 172008
-actual_hours: 0.06
+actual_tokens: 227341
+actual_hours: 0.12
 tags: [task]
 ---
 # T012 SQLite web persistence
