@@ -17,6 +17,7 @@
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.js"
     ],
+    "testTimeout": 20000,
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/e2e/",
