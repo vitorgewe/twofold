@@ -5,6 +5,16 @@ const RATE_DECIMALS = 8;
 
 const DECIMAL_PATTERN = /^(\d+)(?:\.(\d+))?$/;
 
+/**
+ * Makes typed text parseable: a single comma is read as the decimal separator ("12,50" -> "12.50", the pt-BR
+ * keyboard). Text with both separators ("1.234,56") or several commas is left as it is, so parsing rejects it.
+ */
+export function normalizeDecimalInput(text: string): string {
+  const trimmed = text.trim();
+  const commas = trimmed.split(',').length - 1;
+  return commas === 1 && !trimmed.includes('.') ? trimmed.replace(',', '.') : trimmed;
+}
+
 function parseScaled(text: string, decimals: number, what: string): bigint {
   const match = DECIMAL_PATTERN.exec(text.trim());
   if (!match) {

@@ -1,11 +1,11 @@
 import type { Account } from '../features/ledger/account-types';
 import { assertBalanced, InvalidTransactionError, type PostingSide } from '../features/ledger/balance';
-import { BRL } from '../features/ledger/currency';
+import { BRL, currencyOf } from '../features/ledger/currency';
 import { isIsoDate } from '../features/ledger/date';
+import { toBrl } from '../features/ledger/money';
 import { accountBalances, type AccountBalance, type ReportPosting } from '../features/ledger/reports';
 import { buildStatement, type StatementRow } from '../features/ledger/statement';
 import { getAccount, listAccounts } from './accounts';
-import { notifyDataChanged } from './changes';
 import { getDatabase, type Database, type SqlValue } from './database';
 import { newId } from './ids';
 import { useQuery, type QueryState } from './useQuery';
@@ -96,6 +96,11 @@ async function validate(db: Database, input: TransactionInput): Promise<void> {
       if (!hasRate || !Number.isSafeInteger(p.rate) || (p.rate as number) <= 0) {
         throw new InvalidTransactionError('a foreign-currency posting needs a positive rate');
       }
+      // The BRL value may be edited to absorb rounding (ADR-0007), but only by a centavo.
+      const currency = currencyOf(account.currency);
+      if (currency && Math.abs(p.amountBrl - toBrl(p.amount, currency, p.rate as number)) > 1) {
+        throw new InvalidTransactionError('the BRL value of a foreign-currency posting must match amount times rate');
+      }
     } else if (p.amountBrl <= 0) {
       throw new InvalidTransactionError('a zero-amount foreign-currency posting must be a value adjustment with a positive BRL amount');
     }
@@ -111,43 +116,44 @@ async function insertPostings(db: Database, transactionId: string, postings: Pos
   }
 }
 
-function checkAndStore(db: Database, input: TransactionInput, store: () => Promise<void>): Promise<void> {
-  return db.transaction(async () => {
-    assertBalanced(input.postings);
-    await validate(db, input);
-    await store();
+function checkAndStore(
+  db: Database,
+  input: TransactionInput,
+  store: (tx: Database) => Promise<void>,
+): Promise<void> {
+  assertBalanced(input.postings);
+  return db.transaction(async (tx) => {
+    await validate(tx, input);
+    await store(tx);
   });
 }
 
 export async function createTransaction(db: Database, input: TransactionInput): Promise<Transaction> {
   const id = newId();
-  await checkAndStore(db, input, async () => {
-    await db.run('INSERT INTO transactions (id, date, description) VALUES (?, ?, ?)', [id, input.date, input.description]);
-    await insertPostings(db, id, input.postings);
+  await checkAndStore(db, input, async (tx) => {
+    await tx.run('INSERT INTO transactions (id, date, description) VALUES (?, ?, ?)', [id, input.date, input.description]);
+    await insertPostings(tx, id, input.postings);
   });
-  notifyDataChanged();
   return (await getTransaction(db, id))!;
 }
 
 /** Replaces the date, description and every posting of an existing transaction. */
 export async function updateTransaction(db: Database, id: string, input: TransactionInput): Promise<Transaction> {
-  await checkAndStore(db, input, async () => {
-    const existing = await db.query('SELECT id FROM transactions WHERE id = ?', [id]);
+  await checkAndStore(db, input, async (tx) => {
+    const existing = await tx.query('SELECT id FROM transactions WHERE id = ?', [id]);
     if (existing.length === 0) throw new InvalidTransactionError(`transaction not found: ${id}`);
-    await db.run('UPDATE transactions SET date = ?, description = ? WHERE id = ?', [input.date, input.description, id]);
-    await db.run('DELETE FROM postings WHERE transaction_id = ?', [id]);
-    await insertPostings(db, id, input.postings);
+    await tx.run('UPDATE transactions SET date = ?, description = ? WHERE id = ?', [input.date, input.description, id]);
+    await tx.run('DELETE FROM postings WHERE transaction_id = ?', [id]);
+    await insertPostings(tx, id, input.postings);
   });
-  notifyDataChanged();
   return (await getTransaction(db, id))!;
 }
 
 export async function deleteTransaction(db: Database, id: string): Promise<void> {
-  await db.transaction(async () => {
-    await db.run('DELETE FROM postings WHERE transaction_id = ?', [id]);
-    await db.run('DELETE FROM transactions WHERE id = ?', [id]);
+  await db.transaction(async (tx) => {
+    await tx.run('DELETE FROM postings WHERE transaction_id = ?', [id]);
+    await tx.run('DELETE FROM transactions WHERE id = ?', [id]);
   });
-  notifyDataChanged();
 }
 
 /** The WHERE clause (over alias t) that selected the transaction rows, reused to select their postings. */
@@ -232,10 +238,31 @@ export function useAccountStatement(accountId: string): QueryState<AccountStatem
   return useQuery(async () => getAccountStatement(await getDatabase(), accountId), [accountId]);
 }
 
-/** Every posting with its date, in the shape the reports take. */
-export async function listReportPostings(db: Database): Promise<ReportPosting[]> {
-  const rows = await db.query<PostingRow & { date: string }>(
-    `SELECT ${POSTING_COLUMNS}, t.date FROM postings p JOIN transactions t ON t.id = p.transaction_id`,
+/**
+ * Postings in the shape the reports take, summed per account and side so the result is at most two rows
+ * per account however long the history is. `from` and `to` (inclusive) limit it to a period; each row's
+ * date is the latest date it covers, which lies inside that period.
+ */
+export async function listReportPostings(
+  db: Database,
+  period: { from?: string; to?: string } = {},
+): Promise<ReportPosting[]> {
+  const where: string[] = [];
+  const params: SqlValue[] = [];
+  if (period.from) {
+    where.push('t.date >= ?');
+    params.push(period.from);
+  }
+  if (period.to) {
+    where.push('t.date <= ?');
+    params.push(period.to);
+  }
+  const rows = await db.query<{ account_id: string; side: PostingSide; amount: number; amount_brl: number; date: string }>(
+    `SELECT p.account_id, p.side, SUM(p.amount) AS amount, SUM(p.amount_brl) AS amount_brl, MAX(t.date) AS date
+     FROM postings p JOIN transactions t ON t.id = p.transaction_id
+     ${where.length > 0 ? `WHERE ${where.join(' AND ')}` : ''}
+     GROUP BY p.account_id, p.side`,
+    params,
   );
   return rows.map((r) => ({
     accountId: r.account_id,

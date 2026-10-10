@@ -88,6 +88,26 @@ describe('accounts', () => {
     await expect(renameAccount(db, other.id, 'savings')).rejects.toThrow(/already exists/);
   });
 
+  it('refuses to archive an account that still holds a balance', async () => {
+    const db = await freshDb();
+    const cash = await createAccount(db, { name: 'Cash', type: 'asset', currency: 'BRL' });
+    const other = await createAccount(db, { name: 'Other', type: 'asset', currency: 'BRL' });
+    await db.run("INSERT INTO transactions (id, date, description) VALUES ('t1', '2026-01-31', 'x')");
+    const post = (id: string, account: string, side: string, amount: number) =>
+      db.run('INSERT INTO postings (id, transaction_id, account_id, side, amount, rate, amount_brl) VALUES (?, ?, ?, ?, ?, NULL, ?)', [id, 't1', account, side, amount, amount]);
+    await post('p1', cash.id, 'debit', 100);
+    await post('p2', other.id, 'credit', 100);
+
+    await expect(archiveAccount(db, cash.id)).rejects.toThrow(/still has a balance/);
+    await expect(archiveAccount(db, other.id)).rejects.toThrow(/still has a balance/);
+    expect(await listAccounts(db)).toHaveLength(2);
+
+    await db.run("INSERT INTO transactions (id, date, description) VALUES ('t2', '2026-02-01', 'y')");
+    await db.run("INSERT INTO postings (id, transaction_id, account_id, side, amount, rate, amount_brl) VALUES ('p3', 't2', ?, 'credit', 100, NULL, 100)", [cash.id]);
+    await archiveAccount(db, cash.id);
+    expect((await listAccounts(db)).map((a) => a.name)).toEqual(['Other']);
+  });
+
   it('allows the name of an archived account, but not unarchiving into a clash', async () => {
     const db = await freshDb();
     const old = await createAccount(db, { name: 'Savings', type: 'asset', currency: 'BRL' });

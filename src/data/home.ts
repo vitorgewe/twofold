@@ -17,11 +17,13 @@ export type HomeSummary = {
 
 export async function getHomeSummary(db: Database, now: Date = new Date()): Promise<HomeSummary> {
   const accounts = await listAccounts(db, { includeArchived: true });
+  const period = monthPeriod(now);
   const postings = await listReportPostings(db);
+  const monthPostings = await listReportPostings(db, period);
   const withBalances = await listAccountsWithBalances(db, { includeArchived: true });
   return {
     netWorth: netWorth(accounts, postings),
-    monthResult: incomeStatement(postings, accounts, monthPeriod(now)).result,
+    monthResult: incomeStatement(monthPostings, accounts, period).result,
     balances: foreignBalances(withBalances),
     backup: backupStatus(await getMeta(db, LAST_BACKUP_KEY), now),
   };

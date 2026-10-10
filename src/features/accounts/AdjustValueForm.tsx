@@ -7,7 +7,7 @@ import { buildAdjustmentPostings, counterAccountType } from '@/features/ledger/a
 import { InvalidTransactionError } from '@/features/ledger/balance';
 import { BRL } from '@/features/ledger/currency';
 import { isIsoDate } from '@/features/ledger/date';
-import { parseAmount } from '@/features/ledger/money';
+import { normalizeDecimalInput, parseAmount } from '@/features/ledger/money';
 import { strings } from '@/ui/strings';
 
 const todayIso = (): string => {
@@ -21,7 +21,7 @@ function parseChange(text: string): number | null {
   const trimmed = text.trim();
   const negative = trimmed.startsWith('-');
   try {
-    const centavos = parseAmount(trimmed.replace(/^[+-]/, ''), BRL);
+    const centavos = parseAmount(normalizeDecimalInput(trimmed.replace(/^[+-]/, '')), BRL);
     return centavos === 0 ? null : negative ? -centavos : centavos;
   } catch {
     return null;

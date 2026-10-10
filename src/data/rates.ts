@@ -1,4 +1,3 @@
-import { notifyDataChanged } from './changes';
 import { BRL } from '../features/ledger/currency';
 import { isIsoDate } from '../features/ledger/date';
 import { getDatabase, type Database } from './database';
@@ -34,7 +33,6 @@ export async function addRate(db: Database, input: Rate): Promise<void> {
     input.date,
     input.rate,
   ]);
-  notifyDataChanged();
 }
 
 export async function latestRate(db: Database, currency: string): Promise<Rate | null> {

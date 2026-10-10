@@ -1,8 +1,6 @@
 import { balanceDifference, isBalanced, type PostingDraft, type PostingSide } from '../ledger/balance';
-import { BRL, BTC, USD, type Currency } from '../ledger/currency';
-import { parseAmount, parseRate, toBrl } from '../ledger/money';
-
-const CURRENCIES: Record<string, Currency> = { BRL, USD, BTC };
+import { BRL, currencyOf, type Currency } from '../ledger/currency';
+import { normalizeDecimalInput, parseAmount, parseRate, toBrl } from '../ledger/money';
 
 export type PostingRow = {
   key: number;
@@ -34,13 +32,11 @@ export const emptyRow = (key: number): PostingRow => ({
   brlText: null,
 });
 
-export const currencyOf = (code: string): Currency | null => CURRENCIES[code] ?? null;
-
 /** Parses text with `parse`; null when empty, malformed or not positive. */
 function positive(text: string, parse: (text: string) => number): { value: number | null; error: boolean } {
   if (text.trim() === '') return { value: null, error: false };
   try {
-    const value = parse(text);
+    const value = parse(normalizeDecimalInput(text));
     return value > 0 ? { value, error: false } : { value: null, error: true };
   } catch {
     return { value: null, error: true };
@@ -56,7 +52,7 @@ export function formatBrlPlain(centavos: number): string {
 
 /** Works out the typed values of one row; `currencyCode` is the currency of its account, if one is chosen. */
 export function evaluateRow(row: PostingRow, currencyCode: string | null): RowResult {
-  const currency = currencyCode ? currencyOf(currencyCode) : null;
+  const currency = currencyCode ? (currencyOf(currencyCode) ?? null) : null;
   const blank: RowResult = {
     currency,
     amount: null,

@@ -1,17 +1,4 @@
-/** Returns a random UUID v4 string. */
-export function newId(): string {
-  const webCrypto = globalThis.crypto;
-  if (typeof webCrypto?.randomUUID === 'function') return webCrypto.randomUUID();
+import { randomUUID } from 'expo-crypto';
 
-  // Runtimes without randomUUID (older Hermes, insecure web origins): build it from random bytes.
-  const bytes = new Uint8Array(16);
-  if (typeof webCrypto?.getRandomValues === 'function') {
-    webCrypto.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
-  }
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-}
+/** Returns a random UUID v4 string (ADR-0008). */
+export const newId = (): string => randomUUID();
