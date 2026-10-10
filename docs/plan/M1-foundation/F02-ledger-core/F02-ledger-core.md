@@ -2,7 +2,7 @@
 id: F02
 type: feature
 milestone: "[[M1-foundation]]"
-status: todo
+status: done
 estimate_tokens: 1250000
 estimate_hours: 1.75
 tags: [feature]
@@ -46,3 +46,7 @@ Pure functions for money, the balance rule, net worth and the income statement l
 ### Round 1, 2026-10-10
 
 Left open only because T023 goes back for defect D1 (committed `app/dbcheck.tsx`, see the T023 QA section). All four Definition of Done items of this feature passed: Jest 74 tests green, the import-scan test passes, and the app starts after the migrations run.
+
+### Round 2, 2026-10-10
+
+T023 is done after the D1 fix. All four Definition of Done items pass: verify is clean (74 tests, no lint warnings) and the app starts after the migrations run.

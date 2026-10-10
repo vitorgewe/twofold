@@ -3,7 +3,7 @@ id: T023
 type: task
 feature: "[[F02-ledger-core]]"
 milestone: "[[M1-foundation]]"
-status: review
+status: done
 depends_on: ["[[T012-sqlite-web-persistence]]", "[[T021-money-and-currency]]", "[[T022-balance-invariant]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
@@ -71,6 +71,10 @@ Reproduce: run `.relay/init.sh`, open `http://localhost:8081/dbcheck` and reload
 Expected: no such route; `app/` holds real screens only.
 
 Fix: `git rm app/dbcheck.tsx`, then confirm `.relay/verify.sh` prints no lint warnings. Everything else in this task passed: migrations, seeded currencies, and rejection of duplicate name, currency change and unknown currency, all seen in the browser.
+
+### Round 2, 2026-10-10
+
+D1 fixed. `app/dbcheck.tsx` is gone from disk and from `git ls-files app`; after `.relay/init.sh --restart`, `/dbcheck` shows "Unmatched Route"; `.relay/verify.sh` is clean with no lint warnings. No defects.
 
 ## Progress (round 2)
 
