@@ -93,13 +93,14 @@ export function incomeStatement(
 ): IncomeStatement {
   const inPeriod = postings.filter((p) => p.date >= period.from && p.date <= period.to);
   const nameOf = new Map(accounts.map((a) => [a.id, a.name]));
+  const touched = new Set(inPeriod.map((p) => p.accountId));
 
   const lines = (type: 'income' | 'expense'): StatementLine[] =>
     accountBalances(
       accounts.filter((a) => a.type === type),
       inPeriod,
     )
-      .filter((b) => b.brl !== 0 || inPeriod.some((p) => p.accountId === b.accountId))
+      .filter((b) => b.brl !== 0 || touched.has(b.accountId))
       .map((b) => ({ accountId: b.accountId, name: nameOf.get(b.accountId) ?? '', brl: b.brl }));
 
   const income = lines('income');

@@ -1,13 +1,13 @@
 import type { Account } from '../features/ledger/account-types';
 import { assertBalanced, InvalidTransactionError, type PostingSide } from '../features/ledger/balance';
+import { BRL } from '../features/ledger/currency';
+import { isIsoDate } from '../features/ledger/date';
 import { accountBalances, type AccountBalance, type ReportPosting } from '../features/ledger/reports';
 import { listAccounts } from './accounts';
 import { notifyDataChanged } from './changes';
 import { getDatabase, type Database, type SqlValue } from './database';
 import { newId } from './ids';
 import { useQuery, type QueryState } from './useQuery';
-
-const BRL_CODE = 'BRL';
 
 export type PostingInput = {
   accountId: string;
@@ -69,22 +69,17 @@ const toPosting = (row: PostingRow): Posting => ({
   amountBrl: row.amount_brl,
 });
 
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
 /** Checks every posting against its account and the money rules; assertBalanced covers the sums. */
 async function validate(db: Database, input: TransactionInput): Promise<void> {
-  if (!DATE_PATTERN.test(input.date)) throw new InvalidTransactionError(`date must be YYYY-MM-DD, got "${input.date}"`);
+  if (!isIsoDate(input.date)) throw new InvalidTransactionError(`date must be YYYY-MM-DD, got "${input.date}"`);
 
   const ids = [...new Set(input.postings.map((p) => p.accountId))];
-  const accounts = new Map<string, { currency: string; archived: number }>();
-  for (const id of ids) {
-    const rows = await db.query<{ currency: string; archived: number }>(
-      'SELECT currency, archived FROM account WHERE id = ?',
-      [id],
-    );
-    if (!rows[0]) throw new InvalidTransactionError(`account not found: ${id}`);
-    accounts.set(id, rows[0]);
-  }
+  const found = await db.query<{ id: string; currency: string; archived: number }>(
+    `SELECT id, currency, archived FROM account WHERE id IN (${ids.map(() => '?').join(', ')})`,
+    ids,
+  );
+  const accounts = new Map(found.map((row) => [row.id, row]));
+  for (const id of ids) if (!accounts.has(id)) throw new InvalidTransactionError(`account not found: ${id}`);
 
   for (const p of input.postings) {
     const account = accounts.get(p.accountId)!;
@@ -93,7 +88,7 @@ async function validate(db: Database, input: TransactionInput): Promise<void> {
       throw new InvalidTransactionError('amounts must be non-negative safe integers');
     }
     const hasRate = p.rate !== undefined && p.rate !== null;
-    if (account.currency === BRL_CODE) {
+    if (account.currency === BRL.code) {
       if (p.amount !== p.amountBrl) throw new InvalidTransactionError('a BRL posting must have amount equal to its BRL value');
       if (hasRate) throw new InvalidTransactionError('a BRL posting cannot have a rate');
     } else if (p.amount > 0) {
@@ -154,14 +149,20 @@ export async function deleteTransaction(db: Database, id: string): Promise<void>
   notifyDataChanged();
 }
 
+/** The WHERE clause (over alias t) that selected the transaction rows, reused to select their postings. */
+type Scope = { clause: string; params: SqlValue[] };
+
 async function withPostings(
   db: Database,
   rows: { id: string; date: string; description: string }[],
+  scope: Scope,
 ): Promise<Transaction[]> {
   if (rows.length === 0) return [];
   const byTransaction = new Map<string, Posting[]>();
   const postings = await db.query<PostingRow>(
-    `SELECT ${POSTING_COLUMNS} FROM postings p JOIN transactions t ON t.id = p.transaction_id ORDER BY p.rowid`,
+    `SELECT ${POSTING_COLUMNS} FROM postings p
+     WHERE p.transaction_id IN (SELECT t.id FROM transactions t ${scope.clause}) ORDER BY p.rowid`,
+    scope.params,
   );
   for (const row of postings) {
     const list = byTransaction.get(row.transaction_id) ?? [];
@@ -176,7 +177,7 @@ export async function getTransaction(db: Database, id: string): Promise<Transact
     'SELECT id, date, description FROM transactions WHERE id = ?',
     [id],
   );
-  return (await withPostings(db, rows))[0] ?? null;
+  return (await withPostings(db, rows, { clause: 'WHERE t.id = ?', params: [id] }))[0] ?? null;
 }
 
 /** Newest first; from and to are inclusive dates; accountId keeps transactions that touch that account. */
@@ -200,7 +201,7 @@ export async function listTransactions(db: Database, filter: TransactionFilter =
     `SELECT t.id, t.date, t.description FROM transactions t ${clause} ORDER BY t.date DESC, t.rowid DESC`,
     params,
   );
-  return withPostings(db, rows);
+  return withPostings(db, rows, { clause, params });
 }
 
 /** Postings of one account with their transaction date, oldest first. */

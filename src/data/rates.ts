@@ -1,4 +1,6 @@
 import { notifyDataChanged } from './changes';
+import { BRL } from '../features/ledger/currency';
+import { isIsoDate } from '../features/ledger/date';
 import { getDatabase, type Database } from './database';
 import { useQuery, type QueryState } from './useQuery';
 
@@ -22,8 +24,8 @@ const toRate = (row: RateRow): Rate => ({ currency: row.currency, date: row.date
 
 /** Stores a rate; a rate for the same currency and date replaces the old one. */
 export async function addRate(db: Database, input: Rate): Promise<void> {
-  if (input.currency === 'BRL') throw new RateError('BRL has no rate');
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) throw new RateError(`Date must be YYYY-MM-DD, got "${input.date}"`);
+  if (input.currency === BRL.code) throw new RateError('BRL has no rate');
+  if (!isIsoDate(input.date)) throw new RateError(`Date must be YYYY-MM-DD, got "${input.date}"`);
   if (!Number.isSafeInteger(input.rate) || input.rate <= 0) throw new RateError('Rate must be a positive integer');
   const currencies = await db.query('SELECT code FROM currency WHERE code = ?', [input.currency]);
   if (currencies.length === 0) throw new RateError(`Unknown currency: ${input.currency}`);

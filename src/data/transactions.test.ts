@@ -168,6 +168,27 @@ describe('transactions', () => {
   });
 });
 
+describe('listTransactions at scale', () => {
+  it('reads past the SQLite variable limit and keeps every posting with its transaction', async () => {
+    const { db, cash, food } = await setup();
+    const count = 33000; // above sql.js MAX_VARIABLE_NUMBER (32766) and the old 999 limit
+    await db.run(
+      `WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < ${count})
+       INSERT INTO transactions (id, date, description) SELECT 't' || i, '2026-01-01', 'bulk' FROM n`,
+    );
+    await db.run(
+      `INSERT INTO postings (id, transaction_id, account_id, side, amount, rate, amount_brl)
+       SELECT 'd' || id, id, ?, 'debit', 100, NULL, 100 FROM transactions
+       UNION ALL SELECT 'c' || id, id, ?, 'credit', 100, NULL, 100 FROM transactions`,
+      [food.id, cash.id],
+    );
+    const all = await listTransactions(db);
+    expect(all).toHaveLength(count);
+    expect(all.every((t) => t.postings.length === 2)).toBe(true);
+    expect((await getTransaction(db, 't7'))?.postings).toHaveLength(2);
+  });
+});
+
 describe('rates', () => {
   it('replaces a rate for the same currency and date and returns the latest', async () => {
     const { db } = await setup();
