@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T022-balance-invariant]]", "[[T023-database-schema-and-accounts-repository]]", "[[T024-net-worth-and-income-statement]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 62297
+actual_hours: 0.02
 tags: [task]
 ---
 # T025 Transactions and rates repositories
