@@ -3,7 +3,7 @@ id: T025
 type: task
 feature: "[[F02-ledger-core]]"
 milestone: "[[M1-foundation]]"
-status: todo
+status: review
 depends_on: ["[[T022-balance-invariant]]", "[[T023-database-schema-and-accounts-repository]]", "[[T024-net-worth-and-income-statement]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
@@ -36,13 +36,13 @@ Out of scope: any screen, backup and import.
 
 ## Definition of Done
 
-- [ ] Jest: a transaction with one credit and three debits is stored and read back with every amount and BRL value intact
-- [ ] Jest: creating or updating to an unbalanced transaction is rejected and the database is unchanged
-- [ ] Jest: an update that changes one amount and keeps the balance is accepted; one that unbalances is rejected
-- [ ] Jest: deleting a transaction removes all its postings
-- [ ] Jest: after a seeded random sequence of creates, updates and deletes, a SQL query finds no transaction whose debits differ from its credits
-- [ ] Jest: the BRL, foreign-currency, zero-amount and archived-account rules, and same-day rate replacement
-- [ ] `.relay/verify.sh` passes
+- [x] Jest: a transaction with one credit and three debits is stored and read back with every amount and BRL value intact
+- [x] Jest: creating or updating to an unbalanced transaction is rejected and the database is unchanged
+- [x] Jest: an update that changes one amount and keeps the balance is accepted; one that unbalances is rejected
+- [x] Jest: deleting a transaction removes all its postings
+- [x] Jest: after a seeded random sequence of creates, updates and deletes, a SQL query finds no transaction whose debits differ from its credits
+- [x] Jest: the BRL, foreign-currency, zero-amount and archived-account rules, and same-day rate replacement
+- [x] `.relay/verify.sh` passes
 
 ## Related decisions
 
@@ -52,5 +52,10 @@ Out of scope: any screen, backup and import.
 - [[ADR-0008-uuid-identifiers]]
 
 ## Progress
+
+### 2026-10-10 12:00
+- Done: `src/data/transactions.ts` and `src/data/rates.ts` with hooks (`useTransactions`, `useAccountsWithBalances`, `useRates`). Writes run in one db transaction, call `assertBalanced`, then check account/currency/rate rules; `notifyDataChanged()` after commit. `src/data/transactions.test.ts` covers every Definition of Done item (10 tests, including a seeded random create/update/delete run checked with SQL). `.relay/verify.sh` passes. No screen exists in this task, so the proof is Jest against real SQL (sql.js), not the browser.
+- Decisions: callers pass `amountBrl` explicitly (not recomputed from the rate, so a user can override rounding); a zero-amount foreign posting may carry any rate; `addRate` rejects BRL, unknown currencies and non-positive rates. `deleteTransaction` on a missing id is a no-op.
+- Next: `withPostings` in transactions.ts reads all postings and filters in memory; scope it by transaction id if lists get large.
 
 ## QA
