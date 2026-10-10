@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T021-money-and-currency]]", "[[T022-balance-invariant]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 43480
+actual_hours: 0.02
 tags: [task]
 ---
 # T024 Net worth and income statement
