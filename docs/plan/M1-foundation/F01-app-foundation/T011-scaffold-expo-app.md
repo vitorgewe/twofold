@@ -3,7 +3,7 @@ id: T011
 type: task
 feature: "[[F01-app-foundation]]"
 milestone: "[[M1-foundation]]"
-status: blocked
+status: todo
 depends_on: []
 estimate_tokens: 800000
 estimate_hours: 1
@@ -21,7 +21,7 @@ A TypeScript Expo app that runs on the web target, with lint, unit tests and the
 
 Follow the Scaffold section of `.relay/module.md`. Create the app in the repository root, scaffolding into a temporary folder and moving files if the command refuses a non-empty folder. Keep everything that already exists: `docs/`, `.relay/`, `.github/`, `.claude/`, `e2e/`, `README.md`, `.gitignore` and the release-please files. Name the package `twofold`.
 
-- TypeScript strict, Expo Router. Remove the template demo content (explore screen, sample images, hello-wave component and similar).
+- TypeScript strict, Expo Router. Do not bring the template demo content (explore screen, sample images, hello-wave component and similar) into the repository: scaffold into a temporary folder and copy only what the app needs (`package.json`, `tsconfig.json`, `app.json`, config files) plus the files you write yourself. `rm` is not allowed in this project, so delete nothing: copy selectively, and use `git rm` for files that are already tracked.
 - `app/_layout.tsx` and `app/index.tsx`: a Home placeholder showing a title taken from `src/ui/strings.ts`.
 - Create the folders from the constitution: `src/features/`, `src/ui/`, `src/data/`. `src/ui/strings.ts` exports a `strings` object; all UI text comes from it.
 - `jest-expo` and `@testing-library/react-native` with a `test` script that ignores `e2e/`; `@playwright/test` with Chromium and a `playwright.config.ts` (test directory `e2e`, base URL `http://localhost:8081`, no `webServer`, since `.relay/init.sh` starts the server).
