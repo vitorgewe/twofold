@@ -3,7 +3,7 @@ id: T071
 type: task
 feature: "[[F07-rates]]"
 milestone: "[[M3-review-and-reports]]"
-status: review
+status: done
 depends_on: ["[[T042-save-transaction]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
