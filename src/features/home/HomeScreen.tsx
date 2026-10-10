@@ -60,6 +60,9 @@ export function HomeScreen() {
       <Link href="/accounts" style={styles.link}>
         {strings.accounts.menu}
       </Link>
+      <Link href="/result" style={styles.link}>
+        {strings.result.menu}
+      </Link>
       <Link href="/rates" style={styles.link}>
         {strings.rates.menu}
       </Link>
