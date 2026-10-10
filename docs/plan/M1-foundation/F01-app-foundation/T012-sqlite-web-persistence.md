@@ -3,7 +3,7 @@ id: T012
 type: task
 feature: "[[F01-app-foundation]]"
 milestone: "[[M1-foundation]]"
-status: in_progress
+status: review
 depends_on: ["[[T011-scaffold-expo-app]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
@@ -37,12 +37,12 @@ Out of scope: tables other than `meta` and `schema_version`, and any UI that sta
 
 ## Definition of Done
 
-- [ ] Observed in the running web app: a value written to `meta` is still there after a full page reload and after closing and reopening the tab
-- [ ] The Progress entry records the browser used and whether `navigator.storage.persist()` was granted
-- [ ] Jest tests for `runMigrations` pass: applies migrations once, applies new ones in order, is idempotent when run twice
-- [ ] The temporary debug screen is not in the commit
-- [ ] The ADR for the `Database` interface and the test adapter exists with status accepted
-- [ ] `.relay/verify.sh` passes
+- [x] Observed in the running web app: a value written to `meta` is still there after a full page reload and after closing and reopening the tab
+- [x] The Progress entry records the browser used and whether `navigator.storage.persist()` was granted
+- [x] Jest tests for `runMigrations` pass: applies migrations once, applies new ones in order, is idempotent when run twice
+- [x] The temporary debug screen is not in the commit
+- [x] The ADR for the `Database` interface and the test adapter exists with status accepted
+- [x] `.relay/verify.sh` passes
 
 ## Related decisions
 
@@ -51,5 +51,10 @@ Out of scope: tables other than `meta` and `schema_version`, and any UI that sta
 - [[ADR-0011-backup-and-csv-import]]
 
 ## Progress
+
+### 2026-10-10 20:40
+- Done: `src/data/database.ts` (lazy `twofold.db`, `Database` interface, `runMigrations`, migration 1 creates `meta`), `sql.js` test adapter, `navigator.storage.persist()` at startup, ADR-0015. Checked in the running web app at 390x844 with Playwright MCP (headless Chromium 155): WRITE put `k=hello` into `meta`; after a full reload READ returned it; after opening a new tab and closing the old one READ returned it again. `navigator.storage.persist()` was NOT granted (`persisted()` returned false in headless Chromium), yet the data survived, so persistence here does not depend on the grant. `.relay/verify.sh` passes (4 migration tests).
+- Failed or surprising: with `web.output: "static"` the dev server answered 500 on `/debug` ("Worker chunk not found for expo-sqlite/web/worker.ts"), because server rendering evaluates expo-sqlite's web worker. I changed `app.json` to `web.output: "single"`; recorded in ADR-0015. The temporary debug screen `app/debug.tsx` had been committed by an earlier session; I removed it with `git rm` after the proof. The Playwright MCP browser may keep a profile between tabs, so "closing and reopening" was a tab close, not a browser restart.
+- Next: nothing for this task. Later tasks that need static rendering must revisit the `single` setting.
 
 ## QA
