@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T042-save-transaction]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 89109
+actual_hours: 0.05
 tags: [task]
 ---
 # T061 Transactions list
