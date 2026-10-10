@@ -1,5 +1,6 @@
 import initSqlJs, { type Database as SqlJsDatabase } from 'sql.js';
 
+import { createDatabase } from './connection';
 import type { Database, SqlValue } from './database';
 
 /** In-memory Database for tests: real SQL in Node, no native module. */
@@ -7,11 +8,11 @@ export async function createTestDatabase(): Promise<Database> {
   const SQL = await initSqlJs();
   const raw: SqlJsDatabase = new SQL.Database();
   raw.run('PRAGMA foreign_keys = ON');
-  return {
-    run: async (sql, params = []) => {
+  return createDatabase({
+    run: async (sql, params) => {
       raw.run(sql, params);
     },
-    query: async <T,>(sql: string, params: SqlValue[] = []) => {
+    query: async <T,>(sql: string, params: SqlValue[]) => {
       const stmt = raw.prepare(sql);
       try {
         stmt.bind(params);
@@ -33,5 +34,5 @@ export async function createTestDatabase(): Promise<Database> {
         throw error;
       }
     },
-  };
+  });
 }

@@ -3,12 +3,12 @@ id: T031
 type: task
 feature: "[[F03-accounts]]"
 milestone: "[[M2-core-flow]]"
-status: todo
+status: done
 depends_on: ["[[T023-database-schema-and-accounts-repository]]", "[[T024-net-worth-and-income-statement]]", "[[T025-transactions-and-rates-repositories]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 63016
+actual_hours: 0.04
 tags: [task]
 ---
 # T031 Accounts screen
@@ -31,13 +31,13 @@ Out of scope: statement (T033), value adjustment (T032).
 
 ## Definition of Done
 
-- [ ] At 390 x 844, create "Checking" (Asset, BRL) and "Cash USD" (Asset, USD): both appear under Asset; Checking shows R$ 0.00 and Cash USD shows R$ 0.00 with a muted USD 0.00
-- [ ] After a full page reload both accounts are still listed
-- [ ] Renaming an account updates its row; archiving hides it, and "Show archived" shows it again
-- [ ] Creating an account with a name already in use shows an error and creates nothing
-- [ ] With no accounts, an empty state explains how to create the first one
-- [ ] Nothing is clipped or overlapping and there is no horizontal scroll at 390 x 844
-- [ ] Jest component tests: `MoneyText` for a BRL value and for a foreign value; the form validation. `e2e/accounts.spec.ts` passes
+- [x] At 390 x 844, create "Checking" (Asset, BRL) and "Cash USD" (Asset, USD): both appear under Asset; Checking shows R$ 0.00 and Cash USD shows R$ 0.00 with a muted USD 0.00
+- [x] After a full page reload both accounts are still listed
+- [x] Renaming an account updates its row; archiving hides it, and "Show archived" shows it again
+- [x] Creating an account with a name already in use shows an error and creates nothing
+- [x] With no accounts, an empty state explains how to create the first one
+- [x] Nothing is clipped or overlapping and there is no horizontal scroll at 390 x 844
+- [x] Jest component tests: `MoneyText` for a BRL value and for a foreign value; the form validation. `e2e/accounts.spec.ts` passes
 
 ## Related decisions
 
@@ -47,5 +47,10 @@ Out of scope: statement (T033), value adjustment (T032).
 - [[ADR-0002-expo-router]]
 
 ## Progress
+
+### 2026-10-10 22:20
+- Done: finished the accounts screen started by an earlier session (route, form, rows, MoneyText, archived toggle, empty state, home link). Checked in the app at 390 x 844 with Playwright: created Checking and Cash USD under Asset (Cash USD shows R$0.00 with muted USD 0.00), both survive a reload, rename and archive work, "Show archived" reveals archived accounts (also after reload), a duplicate name shows an error and creates nothing, a fresh browser context shows the empty state, and there is no horizontal scroll. `e2e/accounts.spec.ts` passes; `.relay/verify.sh` prints `verify: ok`.
+- Failed or surprising: the typed-routes file was stale and failed typecheck on `/accounts` until `.relay/init.sh --restart` regenerated it. The RNTL version here makes `render` and `fireEvent` async, so the new component tests needed `await`. Jest runs in the machine locale (pt-BR, `R$ 123,45`), so the MoneyText test patterns accept `.` or `,` as decimal separator. The e2e smoke contract fixes en-US, so the UI itself is unchanged.
+- Next: nothing left for this task. The evaluator can review it.
 
 ## QA

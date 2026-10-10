@@ -1,5 +1,5 @@
 import { BRL, BTC, USD } from './currency';
-import { RATE_SCALE, formatAmount, parseAmount, parseRate, toBrl } from './money';
+import { RATE_SCALE, formatAmount, normalizeDecimalInput, parseAmount, parseRate, toBrl } from './money';
 
 describe('parseAmount', () => {
   it('parses to minor units', () => {
@@ -63,5 +63,21 @@ describe('formatAmount', () => {
 
   it('formats currencies without an Intl symbol as number and code', () => {
     expect(formatAmount(500000, BTC, 'en-US')).toBe('0.00500000 BTC');
+  });
+});
+
+describe('normalizeDecimalInput', () => {
+  it('reads a single comma as the decimal separator', () => {
+    expect(parseAmount(normalizeDecimalInput('12,50'), BRL)).toBe(1250);
+    expect(parseAmount(normalizeDecimalInput('12.50'), BRL)).toBe(1250);
+    expect(parseAmount(normalizeDecimalInput(' 0,5 '), BRL)).toBe(50);
+    expect(parseAmount(normalizeDecimalInput('0,00000001'), BTC)).toBe(1);
+    expect(parseRate(normalizeDecimalInput('5,2'))).toBe(520_000_000);
+  });
+
+  it('leaves mixed or repeated separators for parsing to reject', () => {
+    for (const text of ['1.234,56', '1,234.5', '1,2,3']) {
+      expect(() => parseAmount(normalizeDecimalInput(text), BRL)).toThrow();
+    }
   });
 });

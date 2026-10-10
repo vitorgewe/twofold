@@ -33,7 +33,7 @@ export type IncomeStatement = {
 const DEBIT_NORMAL: ReadonlySet<AccountType> = new Set<AccountType>(['asset', 'expense']);
 
 /** +1 when a posting on this account type increases its balance, -1 when it decreases it. */
-function direction(type: AccountType, side: PostingSide): number {
+export function direction(type: AccountType, side: PostingSide): number {
   return (side === 'debit') === DEBIT_NORMAL.has(type) ? 1 : -1;
 }
 

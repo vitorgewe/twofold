@@ -1,13 +1,16 @@
 import * as SQLite from 'expo-sqlite';
 
+import { createDatabase, type Driver } from './connection';
 import { ledgerMigration } from './migrations/002-ledger';
+import { transactionDateIndexMigration } from './migrations/003-transaction-date-index';
 
 export type SqlValue = string | number | null;
 
 export interface Database {
   run(sql: string, params?: SqlValue[]): Promise<void>;
   query<T = Record<string, SqlValue>>(sql: string, params?: SqlValue[]): Promise<T[]>;
-  transaction<T>(callback: () => Promise<T>): Promise<T>;
+  /** One SQLite transaction; other calls wait for it. Use the `tx` passed to the callback inside it. */
+  transaction<T>(callback: (tx: Database) => Promise<T>): Promise<T>;
 }
 
 export interface Migration {
@@ -21,6 +24,7 @@ export const migrations: Migration[] = [
     up: (db) => db.run('CREATE TABLE meta (key text primary key, value text)'),
   },
   ledgerMigration,
+  transactionDateIndexMigration,
 ];
 
 export async function runMigrations(db: Database, list: Migration[]): Promise<void> {
@@ -31,9 +35,9 @@ export async function runMigrations(db: Database, list: Migration[]): Promise<vo
   const current = rows[0]?.version ?? 0;
   const pending = list.filter((m) => m.version > current).sort((a, b) => a.version - b.version);
   for (const migration of pending) {
-    await db.transaction(async () => {
-      await migration.up(db);
-      await db.run('INSERT INTO schema_version (version) VALUES (?)', [migration.version]);
+    await db.transaction(async (tx) => {
+      await migration.up(tx);
+      await tx.run('INSERT INTO schema_version (version) VALUES (?)', [migration.version]);
     });
   }
 }
@@ -52,22 +56,28 @@ export function getDatabase(): Promise<Database> {
 
 async function open(): Promise<Database> {
   const native = await SQLite.openDatabaseAsync(DATABASE_NAME);
-  await native.execAsync('PRAGMA foreign_keys = ON');
-  const db: Database = {
-    run: async (sql, params = []) => {
-      await native.runAsync(sql, params);
-    },
-    query: (sql, params = []) => native.getAllAsync(sql, params),
-    transaction: async (callback) => {
-      let result!: Awaited<ReturnType<typeof callback>>;
-      await native.withTransactionAsync(async () => {
-        result = await callback();
-      });
-      return result;
-    },
-  };
-  await runMigrations(db, migrations);
-  return db;
+  try {
+    await native.execAsync('PRAGMA foreign_keys = ON');
+    const driver: Driver = {
+      run: async (sql, params) => {
+        await native.runAsync(sql, params);
+      },
+      query: (sql, params) => native.getAllAsync(sql, params),
+      transaction: async (callback) => {
+        let result!: Awaited<ReturnType<typeof callback>>;
+        await native.withTransactionAsync(async () => {
+          result = await callback();
+        });
+        return result;
+      },
+    };
+    const db = createDatabase(driver);
+    await runMigrations(db, migrations);
+    return db;
+  } catch (error) {
+    await native.closeAsync().catch(() => undefined);
+    throw error;
+  }
 }
 
 export async function requestPersistentStorage(): Promise<boolean> {

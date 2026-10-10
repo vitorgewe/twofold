@@ -23,6 +23,8 @@ A public preview URL of the web app on EAS Hosting.
 
 After that, run `.relay/deploy.sh`, which publishes the web export to EAS Hosting and an EAS Update on the `preview` channel, and record the URL in Progress. Never submit to a store.
 
+**Risk to check (cross-origin isolation):** SQLite on web needs `SharedArrayBuffer`, which needs the headers `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy`. `metro.config.js` sets them only on the dev server, so a static deploy may not have them. On the preview, check that `crossOriginIsolated` is `true` and that an account survives a reload. Use `require-corp`: `credentialless` does not work in Safari.
+
 ## Definition of Done
 
 - [ ] The preview URL opens the app at 390 x 844

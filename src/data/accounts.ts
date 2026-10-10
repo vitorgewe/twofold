@@ -1,5 +1,6 @@
 import { ACCOUNT_TYPES, type Account, type AccountType } from '../features/ledger/account-types';
-import { notifyDataChanged } from './changes';
+import type { PostingSide } from '../features/ledger/balance';
+import { direction } from '../features/ledger/reports';
 import type { Database } from './database';
 import { newId } from './ids';
 
@@ -54,7 +55,6 @@ export async function createAccount(
     input.type,
     input.currency,
   ]);
-  notifyDataChanged();
   return { id, name, type: input.type, currency: input.currency, archived: false };
 }
 
@@ -63,20 +63,33 @@ export async function renameAccount(db: Database, id: string, newName: string): 
   const account = await requireAccount(db, id);
   if (!account.archived) await assertNameFree(db, name, id);
   await db.run('UPDATE account SET name = ? WHERE id = ?', [name, id]);
-  notifyDataChanged();
 }
 
 export async function archiveAccount(db: Database, id: string): Promise<void> {
-  await requireAccount(db, id);
+  const account = await requireAccount(db, id);
+  const postings = await db.query<{ side: PostingSide; amount: number; amount_brl: number }>(
+    'SELECT side, amount, amount_brl FROM postings WHERE account_id = ?',
+    [id],
+  );
+  const signed = (value: (p: (typeof postings)[number]) => number) =>
+    postings.reduce((sum, p) => sum + direction(account.type, p.side) * value(p), 0);
+  const holds = signed((p) => p.amount) !== 0 || signed((p) => p.amount_brl) !== 0;
+  if (holds) throw new AccountError(`Account "${account.name}" still has a balance; empty it before archiving`);
   await db.run('UPDATE account SET archived = 1 WHERE id = ?', [id]);
-  notifyDataChanged();
 }
 
 export async function unarchiveAccount(db: Database, id: string): Promise<void> {
   const account = await requireAccount(db, id);
   await assertNameFree(db, account.name, id);
   await db.run('UPDATE account SET archived = 0 WHERE id = ?', [id]);
-  notifyDataChanged();
+}
+
+export async function getAccount(db: Database, id: string): Promise<Account | null> {
+  const rows = await db.query<AccountRow>(
+    'SELECT id, name, type, currency, archived FROM account WHERE id = ?',
+    [id],
+  );
+  return rows[0] ? toAccount(rows[0]) : null;
 }
 
 export async function listAccounts(

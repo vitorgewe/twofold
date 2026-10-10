@@ -25,4 +25,24 @@ describe('useQuery', () => {
     await act(() => createAccount(db, { name: 'Wallet', type: 'asset', currency: 'BRL' }));
     await waitFor(() => expect(screen.getByTestId('names')).toHaveTextContent('Checking,Wallet'));
   });
+
+  it('drops the previous result when deps change and ignores a stale answer', async () => {
+    const answers = new Map<string, (value: string) => void>();
+    const fetchFor = (key: string) => new Promise<string>((resolve) => answers.set(key, resolve));
+
+    function ByKey({ k }: { k: string }) {
+      const { data, loading } = useQuery(() => fetchFor(k), [k]);
+      return <Text testID="out">{`${loading ? 'loading' : 'ready'}:${data ?? '-'}`}</Text>;
+    }
+
+    const view = await render(<ByKey k="A" />);
+    await act(async () => answers.get('A')!('list A'));
+    await waitFor(() => expect(screen.getByTestId('out')).toHaveTextContent('ready:list A'));
+
+    await view.rerender(<ByKey k="B" />);
+    expect(screen.getByTestId('out')).toHaveTextContent('loading:-');
+
+    await act(async () => answers.get('B')!('list B'));
+    await waitFor(() => expect(screen.getByTestId('out')).toHaveTextContent('ready:list B'));
+  });
 });

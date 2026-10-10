@@ -9,6 +9,7 @@ import {
   getTransaction,
   listAccountsWithBalances,
   listPostingsForAccount,
+  listReportPostings,
   listTransactions,
   updateTransaction,
   type PostingInput,
@@ -145,6 +146,21 @@ describe('transactions', () => {
     await expect(tx([debit('missing', 5), credit(cash.id, 5)])).rejects.toThrow(/not found/);
   });
 
+  it('accepts a BRL value within a centavo of amount times rate and rejects a bigger gap', async () => {
+    const { db, cash, usd } = await setup();
+    const buy = (amountBrl: number) =>
+      createTransaction(db, {
+        date: '2026-02-01',
+        description: 'usd',
+        postings: [{ accountId: usd.id, side: 'debit', amount: 10000, rate: 520_000_000, amountBrl }, credit(cash.id, amountBrl)],
+      });
+    await expect(buy(52000)).resolves.toBeDefined();
+    await expect(buy(52001)).resolves.toBeDefined();
+    await expect(buy(51999)).resolves.toBeDefined();
+    await expect(buy(52100)).rejects.toThrow(/must match amount times rate/);
+    await expect(buy(51900)).rejects.toThrow(/must match amount times rate/);
+  });
+
   it('filters by date range and account, and lists postings per account', async () => {
     const { db, cash, food, fun } = await setup();
     await createTransaction(db, { date: '2026-01-10', description: 'a', postings: [debit(food.id, 10), credit(cash.id, 10)] });
@@ -165,6 +181,27 @@ describe('transactions', () => {
     const balances = await listAccountsWithBalances(db);
     expect(balances.find((a) => a.id === cash.id)?.brl).toBe(-500);
     expect(balances.find((a) => a.id === food.id)?.brl).toBe(500);
+  });
+});
+
+describe('listReportPostings', () => {
+  it('sums per account and side, optionally within a period, and keeps the date index', async () => {
+    const { db, cash, food } = await setup();
+    const spend = (date: string, amount: number) =>
+      createTransaction(db, { date, description: 's', postings: [debit(food.id, amount), credit(cash.id, amount)] });
+    await spend('2026-01-10', 100);
+    await spend('2026-01-20', 50);
+    await spend('2026-02-05', 7);
+
+    const all = await listReportPostings(db);
+    expect(all).toHaveLength(2);
+    expect(all.find((p) => p.accountId === food.id && p.side === 'debit')).toMatchObject({ amount: 157, amountBrl: 157, date: '2026-02-05' });
+
+    const january = await listReportPostings(db, { from: '2026-01-01', to: '2026-01-31' });
+    expect(january.find((p) => p.accountId === food.id)).toMatchObject({ amount: 150, date: '2026-01-20' });
+
+    const indexes = await db.query<{ name: string }>("SELECT name FROM sqlite_master WHERE type='index' AND name='transactions_date'");
+    expect(indexes).toHaveLength(1);
   });
 });
 

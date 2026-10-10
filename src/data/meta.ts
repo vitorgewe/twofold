@@ -1,4 +1,3 @@
-import { notifyDataChanged } from './changes';
 import type { Database } from './database';
 
 export async function getMeta(db: Database, key: string): Promise<string | null> {
@@ -11,5 +10,4 @@ export async function setMeta(db: Database, key: string, value: string): Promise
     'INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
     [key, value],
   );
-  notifyDataChanged();
 }
