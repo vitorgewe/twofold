@@ -1,4 +1,4 @@
-import type { Account, AccountType } from '../../data/accounts';
+import type { Account, AccountType } from './account-types';
 import type { PostingSide } from './balance';
 
 /** A stored posting joined with its transaction date (YYYY-MM-DD). */

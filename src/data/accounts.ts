@@ -1,17 +1,7 @@
+import { ACCOUNT_TYPES, type Account, type AccountType } from '../features/ledger/account-types';
 import { notifyDataChanged } from './changes';
 import type { Database } from './database';
 import { newId } from './ids';
-
-export const ACCOUNT_TYPES = ['asset', 'liability', 'equity', 'income', 'expense'] as const;
-export type AccountType = (typeof ACCOUNT_TYPES)[number];
-
-export type Account = {
-  id: string;
-  name: string;
-  type: AccountType;
-  currency: string;
-  archived: boolean;
-};
 
 export class AccountError extends Error {
   constructor(message: string) {

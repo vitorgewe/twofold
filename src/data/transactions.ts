@@ -1,6 +1,7 @@
+import type { Account } from '../features/ledger/account-types';
 import { assertBalanced, InvalidTransactionError, type PostingSide } from '../features/ledger/balance';
 import { accountBalances, type AccountBalance, type ReportPosting } from '../features/ledger/reports';
-import { listAccounts, type Account } from './accounts';
+import { listAccounts } from './accounts';
 import { notifyDataChanged } from './changes';
 import { getDatabase, type Database, type SqlValue } from './database';
 import { newId } from './ids';

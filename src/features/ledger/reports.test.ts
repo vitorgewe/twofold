@@ -1,4 +1,4 @@
-import type { Account, AccountType } from '../../data/accounts';
+import type { Account, AccountType } from './account-types';
 import type { PostingSide } from './balance';
 import { accountBalances, balancesByCurrency, incomeStatement, netWorth, type ReportPosting } from './reports';
 
