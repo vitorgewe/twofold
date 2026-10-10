@@ -228,8 +228,11 @@ export async function listReportPostings(db: Database): Promise<ReportPosting[]>
   }));
 }
 
-export async function listAccountsWithBalances(db: Database): Promise<AccountWithBalance[]> {
-  const accounts = await listAccounts(db);
+export async function listAccountsWithBalances(
+  db: Database,
+  options: { includeArchived?: boolean } = {},
+): Promise<AccountWithBalance[]> {
+  const accounts = await listAccounts(db, options);
   const balances = accountBalances(accounts, await listReportPostings(db));
   const byId = new Map(balances.map((b) => [b.accountId, b]));
   return accounts.map((a) => ({ ...a, ...byId.get(a.id)! }));
@@ -243,6 +246,10 @@ export function useTransactions(filter: TransactionFilter = {}): QueryState<Tran
   ]);
 }
 
-export function useAccountsWithBalances(): QueryState<AccountWithBalance[]> {
-  return useQuery(async () => listAccountsWithBalances(await getDatabase()));
+export function useAccountsWithBalances(
+  options: { includeArchived?: boolean } = {},
+): QueryState<AccountWithBalance[]> {
+  return useQuery(async () => listAccountsWithBalances(await getDatabase(), options), [
+    options.includeArchived,
+  ]);
 }
