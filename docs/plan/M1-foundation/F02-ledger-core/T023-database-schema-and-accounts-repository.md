@@ -3,7 +3,7 @@ id: T023
 type: task
 feature: "[[F02-ledger-core]]"
 milestone: "[[M1-foundation]]"
-status: review
+status: todo
 depends_on: ["[[T012-sqlite-web-persistence]]", "[[T021-money-and-currency]]", "[[T022-balance-invariant]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5
@@ -61,3 +61,13 @@ Out of scope: transactions, postings and rates repositories (T025), and any scre
 - Next: delete `app/dbcheck.tsx`. T025 builds the transactions, postings and rates repositories on this schema; nothing calls `getDatabase()` from a screen yet.
 
 ## QA
+
+### Round 1, 2026-10-10
+
+Defect D1: the throwaway route `app/dbcheck.tsx` is committed. Progress above says it is untracked, but `git ls-files app` lists it.
+
+Reproduce: run `.relay/init.sh`, open `http://localhost:8081/dbcheck` and reload. Each load inserts an account named `Check <timestamp>` into the real database (count 3, then 4). `.relay/verify.sh` also prints 3 `no-unused-vars` lint warnings for it.
+
+Expected: no such route; `app/` holds real screens only.
+
+Fix: `git rm app/dbcheck.tsx`, then confirm `.relay/verify.sh` prints no lint warnings. Everything else in this task passed: migrations, seeded currencies, and rejection of duplicate name, currency change and unknown currency, all seen in the browser.

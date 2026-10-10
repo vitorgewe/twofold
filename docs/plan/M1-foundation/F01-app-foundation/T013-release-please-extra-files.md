@@ -3,7 +3,7 @@ id: T013
 type: task
 feature: "[[F01-app-foundation]]"
 milestone: "[[M1-foundation]]"
-status: review
+status: done
 depends_on: ["[[T011-scaffold-expo-app]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25

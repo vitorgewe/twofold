@@ -3,7 +3,7 @@ id: T025
 type: task
 feature: "[[F02-ledger-core]]"
 milestone: "[[M1-foundation]]"
-status: review
+status: done
 depends_on: ["[[T022-balance-invariant]]", "[[T023-database-schema-and-accounts-repository]]", "[[T024-net-worth-and-income-statement]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5

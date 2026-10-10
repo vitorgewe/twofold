@@ -3,7 +3,7 @@ id: T011
 type: task
 feature: "[[F01-app-foundation]]"
 milestone: "[[M1-foundation]]"
-status: review
+status: done
 depends_on: []
 estimate_tokens: 800000
 estimate_hours: 1
