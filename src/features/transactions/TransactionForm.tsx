@@ -1,11 +1,14 @@
 import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { getDatabase } from '@/data/database';
+import { latestRate } from '@/data/rates';
 import { useAccountsWithBalances, type Transaction, type TransactionInput } from '@/data/transactions';
 import type { PostingDraft } from '@/features/ledger/balance';
 import { BRL } from '@/features/ledger/currency';
 import { isIsoDate } from '@/features/ledger/date';
 import { formatAmount } from '@/features/ledger/money';
+import { formatRate } from '@/features/rates/format';
 import { strings } from '@/ui/strings';
 
 import {
@@ -53,6 +56,23 @@ export function TransactionForm({ onSubmit, initial, onCancel }: Props) {
 
   const update = (key: number, patch: Partial<PostingRow>) =>
     setRows((current) => current.map((row) => (row.key === key ? { ...row, ...patch } : row)));
+
+  /** Fills the rate of a row with the latest stored rate, unless the user typed one or changed the account meanwhile. */
+  const prefillRate = async (key: number, accountId: string, currency: string) => {
+    let latest;
+    try {
+      latest = await latestRate(await getDatabase(), currency);
+    } catch {
+      return; // no stored rate is not worth blocking the form
+    }
+    if (!latest) return;
+    const text = formatRate(latest.rate);
+    setRows((current) =>
+      current.map((row) =>
+        row.key === key && row.accountId === accountId && row.rateText === '' ? { ...row, rateText: text } : row,
+      ),
+    );
+  };
 
   const evaluated = rows.map((row) => {
     const account = accounts.find((a) => a.id === row.accountId) ?? null;
@@ -138,6 +158,7 @@ export function TransactionForm({ onSubmit, initial, onCancel }: Props) {
                     onPress={() => {
                       update(row.key, { accountId: a.id, amountText: '', rateText: '', brlText: null });
                       setOpenKey(null);
+                      if (a.currency !== BRL.code) void prefillRate(row.key, a.id, a.currency);
                     }}
                     style={styles.option}
                   >

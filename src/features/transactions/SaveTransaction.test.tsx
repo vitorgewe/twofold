@@ -1,8 +1,9 @@
-import { fireEvent, render, screen, within } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 
 import NewTransaction from '../../../app/transactions/new';
 import { archiveAccount, createAccount } from '@/data/accounts';
 import { migrations, runMigrations, type Database } from '@/data/database';
+import { addRate } from '@/data/rates';
 import { createTestDatabase } from '@/data/sqljs-adapter';
 import { listTransactions } from '@/data/transactions';
 
@@ -44,6 +45,27 @@ describe('saving from the new-transaction route', () => {
     const stored = await listTransactions(mockDb);
     expect(stored).toHaveLength(1);
     expect(stored[0].description).toBe('Lunch');
+  });
+
+  it('prefills the rate of a foreign account from the latest stored rate, and the user can overwrite it', async () => {
+    await createAccount(mockDb, { name: 'Cash USD', type: 'asset', currency: 'USD' });
+    await addRate(mockDb, { currency: 'USD', date: '2026-01-01', rate: 510000000 });
+    await addRate(mockDb, { currency: 'USD', date: '2026-02-01', rate: 520000000 });
+    await render(<NewTransaction />);
+    await fill(1, 'Cash USD', 'Debit', '100.00');
+
+    await waitFor(() => expect(within(row(1)).getByLabelText('Rate').props.value).toBe('5.20'));
+    expect(within(row(1)).getByLabelText('BRL value').props.value).toBe('520.00');
+
+    await fireEvent.changeText(within(row(1)).getByLabelText('Rate'), '6');
+    expect(within(row(1)).getByLabelText('BRL value').props.value).toBe('600.00');
+  });
+
+  it('leaves the rate empty when no rate is stored', async () => {
+    await createAccount(mockDb, { name: 'Cash USD', type: 'asset', currency: 'USD' });
+    await render(<NewTransaction />);
+    await fill(1, 'Cash USD', 'Debit', '100.00');
+    expect(within(row(1)).getByLabelText('Rate').props.value).toBe('');
   });
 
   it('shows the repository error and keeps the form when the write is rejected', async () => {
