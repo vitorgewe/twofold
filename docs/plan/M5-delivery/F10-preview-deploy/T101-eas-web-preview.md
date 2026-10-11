@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T051-home-screen]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
-actual_tokens: 72915
-actual_hours: 0.02
+actual_tokens: 101641
+actual_hours: 0.03
 tags: [task]
 ---
 # T101 EAS web preview
