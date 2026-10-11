@@ -29,7 +29,7 @@ Check by the author, after merging a release pull request: the job runs, and Set
 ## Definition of Done
 
 - [x] Session: the workflow file is valid and the new job is skipped when no release was created
-- [ ] Author: after a release pull request is merged, the job runs and the deployed app's Settings shows the new version
+- [x] Author: after a release pull request is merged, the job runs and the deployed app's Settings shows the new version
 - [x] The token appears nowhere in logs or in the repository
 
 ## Related decisions
@@ -48,6 +48,11 @@ Check by the author, after merging a release pull request: the job runs, and Set
 - Done: resolved QA D1. The version shown is a stale Metro cache, not a code problem. A clean export (`npx expo export --platform web --clear`) embeds `"version":"0.3.0"`, and after `.relay/init.sh --restart` Settings at 390 x 844 shows `Version 0.3.0` (read from `Constants.expoConfig.version`, so it follows `app.json`). The CI deploy job runs on a fresh checkout with `npm ci`, so it has no stale cache. `.relay/verify.sh` passes. No workflow change was needed.
 - Failed or surprising: D3 (`--prod`) still cannot be confirmed here, as `eas` is denied. My clean export wrote to `.relay/dist-check/`, which is untracked and not committed; it can be deleted.
 - Next: nothing for a session. The author merges a release pull request and checks that the `deploy` job runs and that Settings on the deployed app shows the new version. If `--prod` is rejected, drop it.
+
+### 2026-10-11 first automatic deploy (recorded by the author's interactive session)
+- Done: the author merged release pull request #15 (`release 0.3.1`). The `deploy` job (run 38143817546) succeeded in every step: `npm ci`, `npx expo export --platform web`, `npx eas-cli deploy --prod --non-interactive` and the isolation header check against the repository variable `PROD_URL` (`https://twofold.expo.app`). Production was updated at 13:37 UTC, answers with both cross-origin isolation headers, and Settings shows `Version 0.3.1`. The Author item above is ticked on that evidence.
+- Failed or surprising: nothing. `--prod` is accepted by `eas-cli deploy`, so D3 of the M5 QA report is settled.
+- Next: nothing. The token `EXPO_TOKEN` and `RELEASE_PLEASE_TOKEN` can expire; the author keeps their dates.
 
 ## QA
 
