@@ -1,5 +1,5 @@
 import { Link } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { exportBackup, importBackup, markBackupDone } from '@/data/backup';
@@ -22,6 +22,9 @@ export function SettingsScreen() {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [csvPlan, setCsvPlan] = useState<ImportPlan | null>(null);
 
+  const [busy, setBusy] = useState(false);
+  const running = useRef(false);
+
   const reset = () => {
     setMessage(null);
     setProblem(null);
@@ -29,7 +32,21 @@ export function SettingsScreen() {
     setCsvPlan(null);
   };
 
-  const onExport = async () => {
+  // A second press before the first finishes would run the same work twice; the ref
+  // blocks it at once, the state disables the buttons.
+  const once = (action: () => Promise<void>) => async () => {
+    if (running.current) return;
+    running.current = true;
+    setBusy(true);
+    try {
+      await action();
+    } finally {
+      running.current = false;
+      setBusy(false);
+    }
+  };
+
+  const onExport = once(async () => {
     reset();
     try {
       const db = await getDatabase();
@@ -41,7 +58,7 @@ export function SettingsScreen() {
     } catch {
       setProblem({ title: t.exportFailed, reasons: [] });
     }
-  };
+  });
 
   const onPick = async () => {
     reset();
@@ -56,7 +73,7 @@ export function SettingsScreen() {
     }
   };
 
-  const onConfirm = async () => {
+  const onConfirm = once(async () => {
     if (!preview) return;
     try {
       await importBackup(await getDatabase(), preview.backup);
@@ -66,7 +83,7 @@ export function SettingsScreen() {
       setPreview(null);
       setProblem({ title: t.importFailed, reasons: e instanceof Error && e.message ? [e.message] : [] });
     }
-  };
+  });
 
   const onPickCsv = async () => {
     reset();
@@ -81,7 +98,7 @@ export function SettingsScreen() {
     }
   };
 
-  const onConfirmCsv = async () => {
+  const onConfirmCsv = once(async () => {
     if (!csvPlan || csvPlan.errors.length > 0) return;
     const count = csvPlan.newTransactions.length;
     try {
@@ -92,7 +109,7 @@ export function SettingsScreen() {
       reset();
       setProblem({ title: t.importFailed, reasons: e instanceof Error && e.message ? [e.message] : [] });
     }
-  };
+  });
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -104,7 +121,13 @@ export function SettingsScreen() {
         {t.backup}
       </Text>
       <View style={styles.actions}>
-        <Pressable accessibilityRole="button" onPress={onExport} style={styles.button}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ disabled: busy }}
+          disabled={busy}
+          onPress={onExport}
+          style={[styles.button, busy && styles.disabled]}
+        >
           <Text style={styles.buttonText}>{t.export}</Text>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={onPick} style={styles.button}>
@@ -148,7 +171,13 @@ export function SettingsScreen() {
           <Text>{t.count(t.rates, preview.counts.rates)}</Text>
           <Text style={styles.warning}>{t.replaceWarning}</Text>
           <View style={styles.actions}>
-            <Pressable accessibilityRole="button" onPress={onConfirm} style={[styles.button, styles.danger]}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: busy }}
+              disabled={busy}
+              onPress={onConfirm}
+              style={[styles.button, styles.danger, busy && styles.disabled]}
+            >
               <Text style={styles.buttonText}>{t.confirmImport}</Text>
             </Pressable>
             <Pressable accessibilityRole="button" onPress={reset} style={styles.button}>
@@ -178,10 +207,10 @@ export function SettingsScreen() {
           <View style={styles.actions}>
             <Pressable
               accessibilityRole="button"
-              accessibilityState={{ disabled: csvPlan.errors.length > 0 }}
-              disabled={csvPlan.errors.length > 0}
+              accessibilityState={{ disabled: csvPlan.errors.length > 0 || busy }}
+              disabled={csvPlan.errors.length > 0 || busy}
               onPress={onConfirmCsv}
-              style={[styles.button, csvPlan.errors.length > 0 && styles.disabled]}
+              style={[styles.button, (csvPlan.errors.length > 0 || busy) && styles.disabled]}
             >
               <Text style={styles.buttonText}>{t.csvImport}</Text>
             </Pressable>
