@@ -3,7 +3,7 @@ id: T101
 type: task
 feature: "[[F10-preview-deploy]]"
 milestone: "[[M5-delivery]]"
-status: todo
+status: review
 depends_on: ["[[T051-home-screen]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
@@ -79,6 +79,12 @@ Never submit to a store.
 - Done: re-ran `.relay/verify.sh`: `verify: ok` (221 tests, web export ok). Session items remain done; nothing left in the repository for a session to build.
 - Failed or surprising: nothing new. The Author items (preview URL, `crossOriginIsolated`, account survives reload) need `.relay/deploy.sh`, which sessions may not run.
 - Next: author runs `.relay/deploy.sh`, writes URL and the three results here, ticks the Author items.
+- Status: review (session items done; author items remain unticked on purpose).
+
+### 2026-10-11 17:00
+- Done: re-checked the repository: `eas-cli` dev dependency, `eas.json` with `preview`, `app.json` plugin headers, ADR-0017 accepted, all committed. `.relay/verify.sh` prints `verify: ok` (221 tests, web export ok). No secret in the repository.
+- Failed or surprising: nothing to build. The Author items need `.relay/deploy.sh` and `eas`, which sessions may not run, so they stay unticked.
+- Next: author runs `.relay/deploy.sh`, then writes the preview URL and the three results here and ticks the Author items.
 - Status: review (session items done; author items remain unticked on purpose).
 
 ## QA
