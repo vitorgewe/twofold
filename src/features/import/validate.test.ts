@@ -85,6 +85,15 @@ describe('planImport', () => {
     ]);
   });
 
+  it('rejects a zero amount on a foreign-currency row, naming its line', () => {
+    const result = plan([
+      't-1,2026-09-06,x,Crypto,asset,debit,0.00000000,BTC,350000',
+      't-1,2026-09-06,x,Checking,asset,credit,0.00,BRL,',
+    ]);
+    expect(result.errors).toEqual(['Line 2: a zero amount is not allowed for BTC rows.']);
+    expect(result.newTransactions).toEqual([]);
+  });
+
   it('rejects too many decimals, bad dates, sides, currencies and amounts', () => {
     const result = plan([
       't-1,2026-02-30,x,Checking,asset,credit,10.001,BRL,',

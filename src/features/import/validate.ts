@@ -82,10 +82,15 @@ export function planImport(
     let rate: number | null = null;
     let amountBrl = 0;
     if (currency) {
+      let amountParsed = false;
       try {
         amount = parseAmount(row.amount, currency);
+        amountParsed = true;
       } catch (e) {
         fail(row.line, e instanceof Error ? e.message : String(e));
+      }
+      if (amountParsed && amount === 0 && currency.code !== BRL.code) {
+        fail(row.line, `a zero amount is not allowed for ${currency.code} rows.`);
       }
       if (currency.code === BRL.code) {
         if (row.rate_to_brl) fail(row.line, 'rate_to_brl must be empty for BRL rows.');
