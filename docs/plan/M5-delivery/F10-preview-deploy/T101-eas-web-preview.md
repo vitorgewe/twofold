@@ -3,7 +3,7 @@ id: T101
 type: task
 feature: "[[F10-preview-deploy]]"
 milestone: "[[M5-delivery]]"
-status: review
+status: todo
 depends_on: ["[[T051-home-screen]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
@@ -70,3 +70,8 @@ Never submit to a store.
 - Status: review (session items done; author items remain unticked on purpose).
 
 ## QA
+
+### Round 1, 2026-10-11
+- Session items pass: `.relay/verify.sh` passes, `eas.json` has the `preview` channel, ADR-0017 exists, no secret found in the repository. After `.relay/init.sh --restart`, `crossOriginIsolated` was `true` on the local dev server.
+- Defect: the author items are not done or not recorded (no preview URL, no result of the three checks). Reproduce: read Progress above. Expected: URL and result written by the author. Actual: nothing. Not verifiable by QA (no `eas` access).
+- Related defect D1 in `docs/qa/QA-M5-delivery.md`: the exported bundle embeds app version 0.2.0 while the repository is at 0.3.0.

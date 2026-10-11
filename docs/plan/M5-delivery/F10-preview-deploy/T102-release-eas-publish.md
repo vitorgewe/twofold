@@ -3,7 +3,7 @@ id: T102
 type: task
 feature: "[[F10-preview-deploy]]"
 milestone: "[[M5-delivery]]"
-status: review
+status: todo
 depends_on: ["[[T101-eas-web-preview]]", "[[T013-release-please-extra-files]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
@@ -45,3 +45,9 @@ Check by the author, after merging a release pull request: the job runs, and Set
 - Next: the author checks on the first real release: the `deploy` job runs and Settings on the deployed app shows the new version. If `--prod` is rejected, drop it (`.relay/deploy.sh` uses plain `eas-cli deploy`). Note that T101's isolation-header check (ADR-0017) is still pending on the real preview.
 
 ## QA
+
+### Round 1, 2026-10-11
+- Session items pass by reading: the `deploy` job is gated on `release_created == 'true'`, runs only on push to `main`, and the token is referenced only as `secrets.EXPO_TOKEN`.
+- Defect D1: Settings shows `Version 0.2.0` on the dev server, and `dist` (fresh export from `.relay/verify.sh`) embeds `"version":"0.2.0"`, while `app.json`, `package.json` and `.release-please-manifest.json` say 0.3.0. Reproduce: `.relay/init.sh --restart`, open `/settings` at 390 x 844; or search the `dist` entry bundle for `"version"`. Expected 0.3.0. Find out whether it is a stale Metro cache (try `npx expo export --platform web --clear`) or a real problem, since the milestone needs the deployed Settings to show the new version.
+- Defect D3: `--prod` in `eas-cli deploy` is unconfirmed; the author's check on a real release settles it.
+- Author item (deployed Settings shows the new version) is not verifiable here.

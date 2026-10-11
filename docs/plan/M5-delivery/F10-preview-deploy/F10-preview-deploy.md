@@ -35,3 +35,6 @@ Both tasks start `blocked` because they need accounts and tokens that only the a
 ## Progress
 
 ## QA
+
+### Round 1, 2026-10-11
+- Both Definition of Done items are not verifiable here (no preview URL recorded, no real release). Local Settings shows 0.2.0 against 0.3.0 in the repository (D1). Details in `docs/qa/QA-M5-delivery.md`.
