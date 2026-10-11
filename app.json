@@ -16,6 +16,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "eac31025-241d-4bcc-8bb3-84b96ec58c1b"
+      }
+    },
+    "owner": "vitorgewe"
   }
 }
