@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 
 import { TransactionForm } from './TransactionForm';
 
@@ -18,9 +18,19 @@ const mockAccounts = [
   account('old', 'Old account', 'BRL', true),
 ];
 
+let mockLoaded = true;
+
 jest.mock('@/data/transactions', () => ({
-  useAccountsWithBalances: () => ({ data: mockAccounts, error: undefined, loading: false }),
+  useAccountsWithBalances: () => ({ data: mockLoaded ? mockAccounts : undefined, error: undefined, loading: !mockLoaded }),
 }));
+jest.mock('@/data/database', () => ({ getDatabase: async () => ({}) }));
+jest.mock('@/data/rates', () => ({
+  latestRate: async () => ({ rate: 560000000 }),
+}));
+
+afterEach(() => {
+  mockLoaded = true;
+});
 
 const row = (n: number) => screen.getByTestId(`posting-${n}`);
 
@@ -116,6 +126,90 @@ describe('TransactionForm', () => {
     await fireEvent.press(save());
     expect(onSubmit).toHaveBeenCalledTimes(2);
     expect(screen.queryByText('account is archived')).toBeNull();
+  });
+
+  it('starts filled with a stored transaction and blocks saving while one side changes', async () => {
+    const onSubmit = jest.fn();
+    const initial = {
+      id: 't1',
+      date: '2026-10-01',
+      description: 'Groceries',
+      postings: [
+        { id: 'p1', transactionId: 't1', accountId: 'brl', side: 'credit' as const, amount: 10000, rate: null, amountBrl: 10000 },
+        { id: 'p2', transactionId: 't1', accountId: 'usd', side: 'debit' as const, amount: 2000, rate: 500000000, amountBrl: 10000 },
+      ],
+    };
+    await render(<TransactionForm initial={initial} onSubmit={onSubmit} />);
+    expect(screen.getByLabelText('Description').props.value).toBe('Groceries');
+    expect(screen.getByLabelText('Date').props.value).toBe('2026-10-01');
+    expect(within(row(1)).getByLabelText('Amount').props.value).toBe('100.00');
+    expect(within(row(2)).getByLabelText('Amount').props.value).toBe('20.00');
+    expect(within(row(2)).getByLabelText('Rate').props.value).toBe('5.00');
+    expect(within(row(2)).getByLabelText('BRL value').props.value).toBe('100.00');
+    expect(save()).toBeEnabled();
+
+    await fireEvent.changeText(within(row(1)).getByLabelText('Amount'), '130.00');
+    expect(screen.getByTestId('difference')).toHaveTextContent(/30[.,]00/);
+    expect(save()).toBeDisabled();
+
+    await fireEvent.changeText(within(row(2)).getByLabelText('Amount'), '26.00');
+    expect(save()).toBeEnabled();
+    await fireEvent.press(save());
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        postings: [
+          { accountId: 'brl', side: 'credit', amount: 13000, rate: null, amountBrl: 13000 },
+          { accountId: 'usd', side: 'debit', amount: 2600, rate: 500000000, amountBrl: 13000 },
+        ],
+      }),
+    );
+  });
+
+  it('builds the edit rows from the loaded accounts, not before them', async () => {
+    const initial = {
+      id: 't2',
+      date: '2026-10-01',
+      description: 'Bitcoin buy',
+      postings: [
+        { id: 'p1', transactionId: 't2', accountId: 'brl', side: 'credit' as const, amount: 30000, rate: null, amountBrl: 30000 },
+        { id: 'p2', transactionId: 't2', accountId: 'btc', side: 'debit' as const, amount: 500000, rate: 60000000000, amountBrl: 30000 },
+      ],
+    };
+    mockLoaded = false;
+    const { rerender } = await render(<TransactionForm initial={initial} onSubmit={jest.fn()} />);
+    expect(screen.queryByTestId('posting-1')).toBeNull();
+
+    mockLoaded = true;
+    await rerender(<TransactionForm initial={initial} onSubmit={jest.fn()} />);
+    expect(within(row(2)).getByLabelText('Amount').props.value).toBe('0.00500000');
+    expect(within(row(2)).getByLabelText('Rate').props.value).toBe('600.00');
+    expect(within(row(2)).getByLabelText('BRL value').props.value).toBe('300.00');
+    expect(within(row(2)).getByLabelText('Account')).toHaveTextContent('Bitcoin (BTC)');
+  });
+
+  it('keeps the stored rate empty instead of prefilling today rate when an edit changes the account', async () => {
+    const initial = {
+      id: 't3',
+      date: '2026-01-10',
+      description: 'Old dollars',
+      postings: [
+        { id: 'p1', transactionId: 't3', accountId: 'brl', side: 'credit' as const, amount: 10000, rate: null, amountBrl: 10000 },
+        { id: 'p2', transactionId: 't3', accountId: 'usd', side: 'debit' as const, amount: 2000, rate: 500000000, amountBrl: 10000 },
+      ],
+    };
+    await render(<TransactionForm initial={initial} onSubmit={jest.fn()} />);
+    await fireEvent.press(within(row(2)).getByLabelText('Account'));
+    await fireEvent.press(screen.getByRole('option', { name: 'Dollars' }));
+    await fireEvent.changeText(within(row(2)).getByLabelText('Amount'), '20.00');
+    await act(async () => {}); // let a (wrongly) started prefill settle
+    expect(within(row(2)).getByLabelText('Rate').props.value).toBe('');
+  });
+
+  it('prefills the latest rate on a new transaction', async () => {
+    await render(<TransactionForm onSubmit={jest.fn()} />);
+    await fireEvent.press(within(row(1)).getByLabelText('Account'));
+    await fireEvent.press(screen.getByRole('option', { name: 'Dollars' }));
+    expect(await screen.findByDisplayValue('5.60')).toBeTruthy();
   });
 
   it('submits the draft when balanced', async () => {

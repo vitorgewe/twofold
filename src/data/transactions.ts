@@ -283,6 +283,10 @@ export async function listAccountsWithBalances(
   return accounts.map((a) => ({ ...a, ...byId.get(a.id)! }));
 }
 
+export function useTransaction(id: string): QueryState<Transaction | null> {
+  return useQuery(async () => getTransaction(await getDatabase(), id), [id]);
+}
+
 export function useTransactions(filter: TransactionFilter = {}): QueryState<Transaction[]> {
   return useQuery(async () => listTransactions(await getDatabase(), filter), [
     filter.from,

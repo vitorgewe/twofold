@@ -1,35 +1,58 @@
 import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { useAccountsWithBalances, type TransactionInput } from '@/data/transactions';
+import { getDatabase } from '@/data/database';
+import { latestRate } from '@/data/rates';
+import {
+  useAccountsWithBalances,
+  type AccountWithBalance,
+  type Transaction,
+  type TransactionInput,
+} from '@/data/transactions';
 import type { PostingDraft } from '@/features/ledger/balance';
 import { BRL } from '@/features/ledger/currency';
-import { isIsoDate } from '@/features/ledger/date';
+import { isIsoDate, todayIso } from '@/features/ledger/date';
 import { formatAmount } from '@/features/ledger/money';
+import { formatRate } from '@/features/rates/format';
 import { strings } from '@/ui/strings';
 
-import { emptyRow, evaluateRow, formatBrlPlain, isBalanced, summarize, type PostingRow } from './draft';
+import {
+  emptyRow,
+  evaluateRow,
+  formatBrlPlain,
+  isBalanced,
+  rowsFromPostings,
+  summarize,
+  type PostingRow,
+} from './draft';
 
 const t = strings.transactions;
-
-const todayIso = (): string => {
-  const now = new Date();
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-};
 
 type Props = {
   /** Resolves when the transaction is stored; a rejection is shown and the form keeps its values. */
   onSubmit: (draft: TransactionInput) => void | Promise<void>;
+  /** A stored transaction to edit; the form starts filled with it. */
+  initial?: Transaction;
+  onCancel?: () => void;
 };
 
-export function TransactionForm({ onSubmit }: Props) {
-  const { data } = useAccountsWithBalances();
-  const accounts = (data ?? []).filter((a) => !a.archived);
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState(todayIso());
-  const [rows, setRows] = useState<PostingRow[]>([emptyRow(1), emptyRow(2)]);
-  const [nextKey, setNextKey] = useState(3);
+/** Waits for the accounts in edit mode: the rows of a stored transaction need each account's currency. */
+export function TransactionForm(props: Props) {
+  const { data } = useAccountsWithBalances({ includeArchived: props.initial !== undefined });
+  if (props.initial && !data) return null;
+  return <TransactionFormBody {...props} all={data ?? []} loaded={data !== undefined} />;
+}
+
+function TransactionFormBody({ onSubmit, initial, onCancel, all, loaded }: Props & { all: AccountWithBalance[]; loaded: boolean }) {
+  const accounts = all.filter((a) => !a.archived || initial?.postings.some((p) => p.accountId === a.id));
+  const [description, setDescription] = useState(initial?.description ?? '');
+  const [date, setDate] = useState(initial?.date ?? todayIso());
+  const [rows, setRows] = useState<PostingRow[]>(() =>
+    initial
+      ? rowsFromPostings(initial.postings, (id) => all.find((a) => a.id === id)?.currency ?? null)
+      : [emptyRow(1), emptyRow(2)],
+  );
+  const [nextKey, setNextKey] = useState(initial ? initial.postings.length + 1 : 3);
   const [openKey, setOpenKey] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -38,6 +61,23 @@ export function TransactionForm({ onSubmit }: Props) {
 
   const update = (key: number, patch: Partial<PostingRow>) =>
     setRows((current) => current.map((row) => (row.key === key ? { ...row, ...patch } : row)));
+
+  /** Fills the rate of a row with the latest stored rate, unless the user typed one or changed the account meanwhile. */
+  const prefillRate = async (key: number, accountId: string, currency: string) => {
+    let latest;
+    try {
+      latest = await latestRate(await getDatabase(), currency);
+    } catch {
+      return; // no stored rate is not worth blocking the form
+    }
+    if (!latest) return;
+    const text = formatRate(latest.rate);
+    setRows((current) =>
+      current.map((row) =>
+        row.key === key && row.accountId === accountId && row.rateText === '' ? { ...row, rateText: text } : row,
+      ),
+    );
+  };
 
   const evaluated = rows.map((row) => {
     const account = accounts.find((a) => a.id === row.accountId) ?? null;
@@ -83,7 +123,7 @@ export function TransactionForm({ onSubmit }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text accessibilityRole="header" style={styles.title}>
-        {t.newTitle}
+        {initial ? t.editTitle : t.newTitle}
       </Text>
 
       <Text style={styles.label}>{t.description}</Text>
@@ -98,7 +138,7 @@ export function TransactionForm({ onSubmit }: Props) {
       <TextInput accessibilityLabel={t.date} style={styles.input} value={date} onChangeText={setDate} />
       {!isIsoDate(date) && <Text style={styles.error}>{t.dateInvalid}</Text>}
 
-      {accounts.length === 0 && data !== undefined && <Text>{t.noAccounts}</Text>}
+      {accounts.length === 0 && loaded && <Text>{t.noAccounts}</Text>}
 
       {evaluated.map(({ row, account, result }, index) => {
         const foreign = result.currency !== null && result.currency.code !== BRL.code;
@@ -123,6 +163,8 @@ export function TransactionForm({ onSubmit }: Props) {
                     onPress={() => {
                       update(row.key, { accountId: a.id, amountText: '', rateText: '', brlText: null });
                       setOpenKey(null);
+                      // Only a new transaction gets today's rate; an edit leaves the rate empty to be typed.
+                      if (a.currency !== BRL.code && initial === undefined) void prefillRate(row.key, a.id, a.currency);
                     }}
                     style={styles.option}
                   >
@@ -238,6 +280,11 @@ export function TransactionForm({ onSubmit }: Props) {
       >
         <Text style={styles.primaryText}>{t.save}</Text>
       </Pressable>
+      {onCancel && (
+        <Pressable accessibilityRole="button" onPress={onCancel} style={styles.button}>
+          <Text>{t.cancel}</Text>
+        </Pressable>
+      )}
     </ScrollView>
   );
 }

@@ -6,15 +6,9 @@ import { createTransaction, type AccountWithBalance } from '@/data/transactions'
 import { buildAdjustmentPostings, counterAccountType } from '@/features/ledger/adjustment';
 import { InvalidTransactionError } from '@/features/ledger/balance';
 import { BRL } from '@/features/ledger/currency';
-import { isIsoDate } from '@/features/ledger/date';
+import { isIsoDate, todayIso } from '@/features/ledger/date';
 import { normalizeDecimalInput, parseAmount } from '@/features/ledger/money';
 import { strings } from '@/ui/strings';
-
-const todayIso = (): string => {
-  const now = new Date();
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-};
 
 /** Parses "200.00", "+200.00" or "-50.00" into signed centavos; null when empty, malformed or zero. */
 function parseChange(text: string): number | null {

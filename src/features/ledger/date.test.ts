@@ -1,4 +1,10 @@
-import { isIsoDate } from './date';
+import { isIsoDate, todayIso } from './date';
+
+describe('todayIso', () => {
+  it('formats the local date', () => {
+    expect(todayIso(new Date(2026, 0, 5))).toBe('2026-01-05');
+  });
+});
 
 describe('isIsoDate', () => {
   it('accepts real calendar dates, including leap days', () => {
