@@ -3,7 +3,7 @@ id: T101
 type: task
 feature: "[[F10-preview-deploy]]"
 milestone: "[[M5-delivery]]"
-status: todo
+status: review
 depends_on: ["[[T051-home-screen]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
@@ -45,7 +45,7 @@ Never submit to a store.
 ## Definition of Done
 
 - [x] Session: `eas-cli` is a dev dependency, `eas.json` has the `preview` channel, and `.relay/verify.sh` passes
-- [ ] Session: an ADR records how the cross-origin isolation headers reach the static deploy
+- [x] Session: an ADR records how the cross-origin isolation headers reach the static deploy
 - [ ] Author: the preview URL opens the app at 390 x 844
 - [ ] Author: `crossOriginIsolated` is `true` on the preview, and an account created there survives a reload
 - [ ] No secret or token is in the repository
@@ -62,5 +62,11 @@ Never submit to a store.
 - `.relay/deploy.sh` notes (not run): (1) `eas-cli update --channel preview` needs `expo-updates` and a `runtimeVersion` in `app.json`, neither is present, so that step will likely fail; (2) it needs `jq`; (3) `eas deploy` publishes `dist`, so headers must be inside the export or in an EAS Hosting config file the docs name.
 - Next: the author, or a session with web access, reads the EAS Hosting docs on custom headers, adds the mechanism, writes the next-free ADR (ADR-0017), and decides on expo-updates. Then tick the Session ADR item.
 - Status: blocked, needs docs access for the headers mechanism.
+
+### 2026-10-11 11:00
+- Done: added the `headers` option (COOP `same-origin`, COEP `require-corp`) to the `expo-router` plugin entry in `app.json`, and wrote ADR-0017 (accepted, provisional) with the fallbacks (`coi-serviceworker`, static host with `_headers`). `metro.config.js` unchanged. `.relay/verify.sh` passes with the new config.
+- Failed or surprising: the `dist` export with `single` output contains only `index.html`, `metadata.json` and bundles, so no headers file is visible there; I could not confirm locally that EAS Hosting applies the plugin headers. This is the unknown the author's check settles. Did not add `credentialless` anywhere.
+- Next: author runs `.relay/deploy.sh`, then checks the three items in the Description. `deploy.sh` notes from the earlier entry still hold (`eas update` needs `expo-updates` and `runtimeVersion`; needs `jq`).
+- Status: review (session items done; author items remain unticked on purpose).
 
 ## QA
