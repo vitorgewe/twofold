@@ -112,7 +112,7 @@ function AccountRow({ account, accounts }: { account: AccountWithBalance; accoun
         ) : (
           <View style={styles.nameBlock}>
             <Link
-              href={{ pathname: '/accounts/[id]', params: { id: account.id } }}
+              href={{ pathname: '/account', params: { id: account.id } }}
               accessibilityLabel={strings.accounts.statement.open(account.name)}
               style={styles.name}
             >

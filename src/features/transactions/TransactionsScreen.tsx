@@ -149,7 +149,7 @@ export function TransactionsScreen() {
             return (
               <Link
                 key={tx.id}
-                href={{ pathname: '/transactions/[id]', params: { id: tx.id } }}
+                href={{ pathname: '/transaction', params: { id: tx.id } }}
                 accessibilityLabel={t.open(tx.description)}
                 style={styles.row}
               >
