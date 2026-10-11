@@ -57,6 +57,7 @@ export const strings = {
     rateInvalid: 'Enter a positive rate with up to 8 decimals.',
     brlInvalid: 'Enter a positive BRL value such as 520.00.',
     dateInvalid: 'Enter the date as YYYY-MM-DD.',
+    rangeInvalid: 'The start date must not be after the end date.',
     noAccounts: 'No active accounts. Create accounts first.',
   },
   result: {

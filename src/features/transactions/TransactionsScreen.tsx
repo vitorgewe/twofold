@@ -50,6 +50,8 @@ export function TransactionsScreen() {
   };
 
   const noFilter = choice === 'all' && !accountId;
+  const dateInvalid = !choice && [fromText, toText].some((text) => text !== '' && !isIsoDate(text));
+  const reversed = !choice && isIsoDate(fromText) && isIsoDate(toText) && fromText > toText;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -98,6 +100,10 @@ export function TransactionsScreen() {
         </View>
       </View>
 
+      {(dateInvalid || reversed) && (
+        <Text style={styles.error}>{reversed ? t.rangeInvalid : t.dateInvalid}</Text>
+      )}
+
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t.accountFilter}
@@ -126,7 +132,7 @@ export function TransactionsScreen() {
         </View>
       )}
 
-      {transactions && transactions.length === 0 && (
+      {transactions && transactions.length === 0 && !reversed && (
         <View style={styles.notice}>
           <Text style={styles.noticeTitle}>{noFilter ? t.emptyTitle : t.noMatchTitle}</Text>
           <Text>{noFilter ? t.emptyBody : t.noMatchBody}</Text>
@@ -174,6 +180,7 @@ const styles = StyleSheet.create({
   dates: { flexDirection: 'row', gap: 8 },
   dateField: { flex: 1, gap: 2 },
   small: { fontSize: 12, color: '#6b7280' },
+  error: { color: '#b91c1c' },
   input: { borderWidth: 1, borderColor: '#9ca3af', borderRadius: 6, padding: 8, fontSize: 16 },
   options: { borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 6 },
   option: { padding: 10, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },

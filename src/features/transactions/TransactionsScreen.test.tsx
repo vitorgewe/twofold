@@ -32,4 +32,21 @@ describe('TransactionsScreen', () => {
     expect(screen.getByLabelText('From').props.value).toBe('2026-01-01');
     expect(screen.getByLabelText('To').props.value).toBe(to);
   });
+
+  it('says so when a typed date is not a full ISO date', async () => {
+    await render(<TransactionsScreen />);
+    await fireEvent.changeText(screen.getByLabelText('From'), '2026-1');
+    expect(screen.getByText('Enter the date as YYYY-MM-DD.')).toBeTruthy();
+
+    await fireEvent.changeText(screen.getByLabelText('From'), '2026-01-01');
+    expect(screen.queryByText('Enter the date as YYYY-MM-DD.')).toBeNull();
+  });
+
+  it('says so when the range is reversed, instead of the no-match notice', async () => {
+    await render(<TransactionsScreen />);
+    await fireEvent.changeText(screen.getByLabelText('From'), '2026-03-01');
+    await fireEvent.changeText(screen.getByLabelText('To'), '2026-02-01');
+    expect(screen.getByText('The start date must not be after the end date.')).toBeTruthy();
+    expect(screen.queryByText('No matching transactions')).toBeNull();
+  });
 });
