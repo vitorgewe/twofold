@@ -7,8 +7,8 @@ status: blocked
 depends_on: ["[[T051-home-screen]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 39039
+actual_hours: 0.01
 tags: [task]
 ---
 # T101 EAS web preview
