@@ -25,7 +25,7 @@ Test adapter candidates: `better-sqlite3` (native build, can fail to install on 
 
 Option 2. `src/data/database.ts` exports `Database` with `run(sql, params)`, `query(sql, params)` and `transaction(callback)`, plus `runMigrations(db, migrations)` driven by a `schema_version` table; each migration runs in its own transaction together with its version row. `getDatabase()` opens `twofold.db` lazily on first use. The test adapter is `sql.js` in `src/data/sqljs-adapter.ts` (`createTestDatabase()`, in-memory).
 
-Web needs two settings, found while proving persistence: Metro treats `.wasm` as an asset and sends cross-origin isolation headers (`metro.config.js`), and `app.json` uses `web.output: "single"` because static rendering fails on expo-sqlite's web worker ("Worker chunk not found"). `navigator.storage.persist()` is requested at startup and ignored where unsupported.
+Web needs two settings, found while proving persistence: Metro treats `.wasm` as an asset and sends cross-origin isolation headers (`metro.config.js`), and `app.json` uses `web.output: "single"` because static rendering fails on expo-sqlite's web worker ("Worker chunk not found"). `navigator.storage.persist()` is requested at startup and ignored where unsupported. Amended by [[ADR-0018-static-web-output-in-production]]: the dev server keeps `single`, and the production export is static.
 
 ## Consequences
 
