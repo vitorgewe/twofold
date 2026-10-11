@@ -3,7 +3,7 @@ id: T102
 type: task
 feature: "[[F10-preview-deploy]]"
 milestone: "[[M5-delivery]]"
-status: blocked
+status: todo
 depends_on: ["[[T101-eas-web-preview]]", "[[T013-release-please-extra-files]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25

@@ -3,7 +3,7 @@ id: T101
 type: task
 feature: "[[F10-preview-deploy]]"
 milestone: "[[M5-delivery]]"
-status: blocked
+status: todo
 depends_on: ["[[T051-home-screen]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
@@ -30,6 +30,12 @@ Work for the build session, once the task is `todo`:
 - Add `eas.json` with the `preview` channel the deploy script uses.
 - Make the static export carry `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` on EAS Hosting. SQLite on web needs `SharedArrayBuffer`, and `metro.config.js` sets those headers only on the dev server. Find the supported mechanism in the Expo EAS Hosting documentation and write an ADR (next free number, accepted) with the choice, because later work depends on it. `credentialless` does not work in Safari.
 - Read `.relay/deploy.sh` (do not run it) and note in Progress any change it needs.
+
+Research for the cross-origin isolation ADR (done by the author's interactive session on 2026-10-11, because unattended sessions have no web access; do not look anything up, use these findings and state the unknowns as unknowns):
+- Mechanism found in the Expo Router documentation (https://docs.expo.dev/router/web/server-headers/): add a `headers` object to the `expo-router` plugin entry in `app.json`, for example `["expo-router", { "headers": { "Cross-Origin-Opener-Policy": "same-origin", "Cross-Origin-Embedder-Policy": "require-corp" } }]`. The page's own example for `expo-sqlite` uses `credentialless`; use `require-corp` because `credentialless` does not work in Safari.
+- Limits stated there: the headers apply only to HTML and API route responses, not to static assets (JavaScript bundles, wasm, images, fonts) and not to redirects. The page covers `web.output` `static` and `server`, and does not mention `single`, which this project uses since T012 (ADR-0015).
+- NOT documented, so unknown: whether EAS Hosting applies these plugin headers to its responses, and whether they apply with `single`. Whether the SQLite worker and wasm still load under `require-corp` is also unverified.
+- So the ADR must record the decision as provisional: set the headers through the `expo-router` plugin in `app.json` (make that change), keep `metro.config.js` for the dev server, and treat the author's check on the real preview (`crossOriginIsolated` is `true` and an account survives a reload) as the test that settles it. List the fallbacks in the ADR: a `coi-serviceworker` that injects the headers on the client, or a static host that supports a `_headers` file. Do not claim the headers work on EAS Hosting before that check.
 
 Human steps, after the session (author):
 - Run `.relay/deploy.sh`, open the URL it prints at 390 x 844, and check three things: the app loads, `crossOriginIsolated` is `true` in the browser console, and an account created there survives a reload. Write the URL and the result in Progress.
