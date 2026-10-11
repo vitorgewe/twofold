@@ -28,3 +28,7 @@ This is not yet known to work on EAS Hosting. Unknown: whether EAS Hosting appli
 ## Consequences
 
 Easier: no new code or dependency. Harder: until the check passes, the preview may open but fail to store data. Under `require-corp`, any cross-origin resource must send `Cross-Origin-Resource-Policy`, so a future third-party asset or font could break the page. We would notice the decision was wrong if `crossOriginIsolated` is `false` on the preview.
+
+## Update 2026-10-11: first deploy
+
+The first deployment served the app without the two headers (`curl -I` on the deployment URL): the `single` export has no `.routes.json` for the hosting to read. [[ADR-0018-static-web-output-in-production]] makes the production export static, which writes the headers into that manifest. Whether EAS Hosting applies them is still to be confirmed on the next deployment.
