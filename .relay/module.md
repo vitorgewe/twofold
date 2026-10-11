@@ -23,6 +23,8 @@ The first task of the first milestone is always the scaffold. It must:
 |---|---|
 | Install and start the web dev server | `.relay/init.sh` (prints the URL, safe to run twice) |
 | Restart the dev server (after changing `metro.config.js`, `app.json`, env files) | `.relay/init.sh --restart` |
+| Restart with an empty Metro cache (after changing the app version, `app.json` or the Babel config) | `.relay/init.sh --restart --clear` |
+| Fresh web export without the cache | `npx expo export --platform web --clear` |
 | Type check, lint, unit tests, web export | `.relay/verify.sh` |
 | Unit tests only | `npx jest` |
 | Smoke test against the dev server | `npx playwright test e2e/smoke.spec.ts` |
@@ -31,6 +33,8 @@ The first task of the first milestone is always the scaffold. It must:
 
 - Create and change files with the Write and Edit tools. Shell redirection and heredocs (`cat > file <<'EOF'`) are refused by the permission rules.
 - Manage the dev server only through `.relay/init.sh`. It records the server it starts and `--restart` replaces exactly that one; relay stops it when the run ends. Do not kill processes by name, do not `sleep` to wait for it, and do not move to another port: a server on 8081 that is in the way is replaced with `--restart`. An environment prefix such as `PORT=8082 .relay/init.sh` does not match the permission rule and is refused.
+- If a value you changed (the app version, something read from `app.json`) still shows the old value after `--restart`, suspect the Metro cache before suspecting your change: Metro inlines the app config into its transform cache without keying on it. Use `--restart --clear`, or `npx expo export --platform web --clear`, and compare.
+- Definition of Done items that start with `Author:` are for the human. Never tick them or try to satisfy them; prepare what the author needs and say how to do it in Progress.
 - If `.relay/init.sh --restart` says the server was not started by relay, stop and record it in the ticket's Progress as `blocked`: a human has to stop it.
 
 ## Testing as a user

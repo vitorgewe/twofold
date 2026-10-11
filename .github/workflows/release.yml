@@ -11,11 +11,51 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
     steps:
       # The token is a personal access token, not GITHUB_TOKEN: pull requests
       # opened with GITHUB_TOKEN do not trigger the CI that main requires.
       - uses: googleapis/release-please-action@v4
+        id: release
         with:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+  # Runs only when merging a release pull request created a release. The job
+  # is triggered by pushes to main, never by pull requests, so forks cannot
+  # reach EXPO_TOKEN.
+  deploy:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    # An older build must not overwrite a newer production deployment.
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx expo export --platform web
+      # The token is exposed to this step only; GitHub masks it in logs.
+      - run: npx eas-cli deploy --prod --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      # ADR-0017: it is not known whether EAS Hosting applies the isolation
+      # headers, and SQLite fails without them. Set the repository variable
+      # PROD_URL to the production URL (printed by the first deploy).
+      - name: Check isolation headers
+        env:
+          PROD_URL: ${{ vars.PROD_URL }}
+        run: |
+          test -n "$PROD_URL" || { echo "Set the repository variable PROD_URL"; exit 1; }
+          headers=$(curl -sSIL "$PROD_URL")
+          echo "$headers" | grep -iq '^cross-origin-opener-policy: *same-origin' || { echo "COOP header missing"; exit 1; }
+          echo "$headers" | grep -iq '^cross-origin-embedder-policy: *require-corp' || { echo "COEP header missing"; exit 1; }
