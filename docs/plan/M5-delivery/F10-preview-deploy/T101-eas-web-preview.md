@@ -3,7 +3,7 @@ id: T101
 type: task
 feature: "[[F10-preview-deploy]]"
 milestone: "[[M5-delivery]]"
-status: todo
+status: review
 depends_on: ["[[T051-home-screen]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
@@ -67,6 +67,12 @@ Never submit to a store.
 - Done: added the `headers` option (COOP `same-origin`, COEP `require-corp`) to the `expo-router` plugin entry in `app.json`, and wrote ADR-0017 (accepted, provisional) with the fallbacks (`coi-serviceworker`, static host with `_headers`). `metro.config.js` unchanged. `.relay/verify.sh` passes with the new config.
 - Failed or surprising: the `dist` export with `single` output contains only `index.html`, `metadata.json` and bundles, so no headers file is visible there; I could not confirm locally that EAS Hosting applies the plugin headers. This is the unknown the author's check settles. Did not add `credentialless` anywhere.
 - Next: author runs `.relay/deploy.sh`, then checks the three items in the Description. `deploy.sh` notes from the earlier entry still hold (`eas update` needs `expo-updates` and `runtimeVersion`; needs `jq`).
+- Status: review (session items done; author items remain unticked on purpose).
+
+### 2026-10-11 13:00
+- Done: re-checked the session items against the repo: `eas-cli` dev dependency, `eas.json` `preview` channel, `expo-router` plugin headers in `app.json`, ADR-0017 accepted. `.relay/verify.sh` passes (221 tests, web export ok). No secret in the repository.
+- Failed or surprising: nothing new to build. The QA defect for this task is only that the author items have no recorded result; a session cannot run `eas` or `deploy.sh`, so I did not touch them. The bundle version mismatch (D1) belongs to the QA report, not to this task.
+- Next: author runs `.relay/deploy.sh`, then writes the preview URL and the three checks (loads at 390 x 844, `crossOriginIsolated` true, account survives reload) here and ticks the Author items.
 - Status: review (session items done; author items remain unticked on purpose).
 
 ## QA
