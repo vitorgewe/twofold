@@ -16,7 +16,8 @@ export async function saveBackupFile(name: string, text: string): Promise<void> 
     document.body.appendChild(link);
     link.click();
     link.remove();
-    URL.revokeObjectURL(url);
+    // The download starts asynchronously; revoking at once can fail it in some browsers.
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
     return;
   }
   const file = new File(Paths.cache, name);
