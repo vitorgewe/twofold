@@ -90,6 +90,29 @@ describe('validateBackup', () => {
     expect(errorsOf({ ...good(), rates: undefined }).join(' ')).toMatch(/"rates" must be a list/);
   });
 
+  it('rejects two active accounts whose names differ only in case, but allows an archived twin', () => {
+    const backup = good();
+    backup.accounts.push({ id: 'a4', name: 'CASH', type: 'asset', currency: 'BRL', archived: false });
+    expect(errorsOf(backup).join(' ')).toMatch(/Two active accounts are named "CASH"/);
+    backup.accounts[3] = { ...backup.accounts[3], archived: true };
+    expect(errorsOf(backup)).toEqual([]);
+  });
+
+  it('rejects two transactions with the same external_id', () => {
+    const backup = good();
+    backup.transactions = [
+      { id: 't1', date: '2026-10-01', description: 'Lunch', external_id: 'x1' },
+      { id: 't2', date: '2026-10-02', description: 'Dinner', external_id: 'x1' },
+    ];
+    expect(errorsOf(backup).join(' ')).toMatch(/Duplicate external_id x1/);
+  });
+
+  it('rejects a backup without the BRL currency', () => {
+    const backup = good();
+    backup.currencies = backup.currencies.filter((c) => c.code !== 'BRL');
+    expect(errorsOf(backup).join(' ')).toMatch(/currency BRL is missing/);
+  });
+
   it('rejects a transaction with no postings', () => {
     const backup = good();
     backup.postings = [];

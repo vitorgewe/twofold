@@ -31,9 +31,10 @@ export async function applyCsvImport(db: Database, plan: ImportPlan): Promise<vo
       ids.set(accountKey(a.name), (await createAccount(tx, a)).id);
     }
     for (const t of plan.newTransactions) {
-      const created = await createTransaction(tx, {
+      await createTransaction(tx, {
         date: t.date,
         description: t.description,
+        externalId: t.externalId,
         postings: t.postings.map((p) => ({
           accountId: ids.get(accountKey(p.account))!,
           side: p.side,
@@ -42,7 +43,6 @@ export async function applyCsvImport(db: Database, plan: ImportPlan): Promise<vo
           amountBrl: p.amountBrl,
         })),
       });
-      await tx.run('UPDATE transactions SET external_id = ? WHERE id = ?', [t.externalId, created.id]);
     }
   });
 }

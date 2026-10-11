@@ -42,7 +42,7 @@ async function exportBackup(page: Page, path: string) {
   const file = await download;
   expect(file.suggestedFilename()).toMatch(/^twofold-backup-\d{4}-\d{2}-\d{2}\.json$/);
   await file.saveAs(path);
-  await expect(page.getByTestId('backup-message')).toContainText('Backup saved');
+  await expect(page.getByTestId('backup-message')).toContainText('Backup ready');
 }
 
 async function pickFile(page: Page, path: string) {

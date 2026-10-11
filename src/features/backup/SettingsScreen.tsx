@@ -142,10 +142,10 @@ export function SettingsScreen() {
         <View testID="import-preview" style={styles.preview}>
           <Text style={styles.sectionTitle}>{t.previewTitle}</Text>
           <Text>{t.exportedAt(preview.backup.exported_at)}</Text>
-          <Text>{t.count('Accounts', preview.counts.accounts)}</Text>
-          <Text>{t.count('Transactions', preview.counts.transactions)}</Text>
-          <Text>{t.count('Postings', preview.counts.postings)}</Text>
-          <Text>{t.count('Rates', preview.counts.rates)}</Text>
+          <Text>{t.count(t.accounts, preview.counts.accounts)}</Text>
+          <Text>{t.count(t.transactions, preview.counts.transactions)}</Text>
+          <Text>{t.count(t.postings, preview.counts.postings)}</Text>
+          <Text>{t.count(t.rates, preview.counts.rates)}</Text>
           <Text style={styles.warning}>{t.replaceWarning}</Text>
           <View style={styles.actions}>
             <Pressable accessibilityRole="button" onPress={onConfirm} style={[styles.button, styles.danger]}>

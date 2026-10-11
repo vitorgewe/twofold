@@ -38,6 +38,18 @@ describe('planImport', () => {
     expect(result.accountsToCreate.map((a) => a.name)).toEqual(['Crypto']);
   });
 
+  it('does not plan a row that fails after the error cap', () => {
+    const junk = Array.from({ length: 60 }, () => 'junk,2026-13-40,Junk,Checking,asset,debit,1.00,BRL,');
+    const result = plan([
+      ...junk,
+      'late,2026-13-40,Late,Checking,asset,debit,1.00,BRL,',
+      'late,2026-13-40,Late,Food,expense,credit,1.00,BRL,',
+    ]);
+    expect(result.errors.length).toBe(50);
+    expect(result.newTransactions).toEqual([]);
+    expect(result.postingCount).toBe(0);
+  });
+
   it('accepts one credit and three debits', () => {
     const result = plan([
       's-1,2026-09-10,Dinner,Checking,asset,credit,100.00,BRL,',

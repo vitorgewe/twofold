@@ -43,6 +43,15 @@ describe('parseCsv', () => {
     });
   });
 
+  it('ignores blanks after a closing quote and rejects other characters there', () => {
+    const ok = parseCsv(`${HEADER}\nt-1,2026-09-05,"Cash" ,Checking,asset,credit,1.00,BRL,\n`);
+    expect(ok).toMatchObject({ ok: true, rows: [{ description: 'Cash' }] });
+    expect(parseCsv(`${HEADER}\nt-1,2026-09-05,"a"b,Checking,asset,credit,1.00,BRL,\n`)).toEqual({
+      ok: false,
+      errors: ['Line 2: unexpected character after a closing quote.'],
+    });
+  });
+
   it('rejects an unclosed quote, an empty file and a file without rows', () => {
     expect(parseCsv(`${HEADER}\nt-1,2026-09-05,"oops,Checking`).ok).toBe(false);
     expect(parseCsv('')).toEqual({ ok: false, errors: ['The file is empty.'] });

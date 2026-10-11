@@ -51,7 +51,10 @@ export function planImport(
   existingIds: ReadonlySet<string>,
 ): ImportPlan {
   const errors: string[] = [];
+  // Set by every failure of the current row, so row validity does not depend on the error cap.
+  let rowFailed = false;
   const fail = (line: number, message: string) => {
+    rowFailed = true;
     if (errors.length < MAX_ERRORS) errors.push(`Line ${line}: ${message}`);
   };
 
@@ -60,7 +63,7 @@ export function planImport(
   const groups = new Map<string, Group>();
 
   for (const row of rows) {
-    const before = errors.length;
+    rowFailed = false;
     if (!row.transaction_id) fail(row.line, 'transaction_id is empty.');
     if (!isIsoDate(row.date)) fail(row.line, `date "${row.date}" must be a real date as YYYY-MM-DD.`);
     if (!row.account) fail(row.line, 'account is empty.');
@@ -114,7 +117,7 @@ export function planImport(
       seen.set(key, known);
     }
 
-    const rowOk = errors.length === before;
+    const rowOk = !rowFailed;
     const group = groups.get(row.transaction_id);
     if (!group) {
       groups.set(row.transaction_id, {
@@ -130,7 +133,7 @@ export function planImport(
       if (row.description !== group.description) {
         fail(row.line, `description differs from line ${group.line} for the same transaction_id.`);
       }
-      group.ok &&= rowOk && errors.length === before;
+      group.ok &&= !rowFailed;
     }
     if (rowOk && row.side && currency) {
       groups.get(row.transaction_id)!.postings.push({

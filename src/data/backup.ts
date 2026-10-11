@@ -7,18 +7,23 @@ type AccountRow = { id: string; name: string; type: Backup['accounts'][number]['
 
 /** Reads every table into the backup format. */
 export async function exportBackup(db: Database, now: Date = new Date()): Promise<Backup> {
-  const accounts = await db.query<AccountRow>('SELECT id, name, type, currency, archived FROM account ORDER BY rowid');
-  return {
-    format_version: FORMAT_VERSION,
-    exported_at: now.toISOString(),
-    currencies: await db.query('SELECT code, name, decimals FROM currency ORDER BY code'),
-    accounts: accounts.map((a) => ({ ...a, archived: a.archived === 1 })),
-    transactions: await db.query('SELECT id, date, description, external_id FROM transactions ORDER BY rowid'),
-    postings: await db.query(
-      'SELECT id, transaction_id, account_id, side, amount, rate, amount_brl FROM postings ORDER BY rowid',
-    ),
-    rates: await db.query('SELECT currency, date, rate_scaled FROM rate ORDER BY currency, date'),
-  };
+  // One transaction, so a write landing mid-export cannot leave postings without their transaction.
+  return db.transaction(async (tx) => {
+    const accounts = await tx.query<AccountRow>('SELECT id, name, type, currency, archived FROM account ORDER BY rowid');
+    return {
+      format_version: FORMAT_VERSION,
+      exported_at: now.toISOString(),
+      currencies: await tx.query<Backup['currencies'][number]>('SELECT code, name, decimals FROM currency ORDER BY code'),
+      accounts: accounts.map((a) => ({ ...a, archived: a.archived === 1 })),
+      transactions: await tx.query<Backup['transactions'][number]>(
+        'SELECT id, date, description, external_id FROM transactions ORDER BY rowid',
+      ),
+      postings: await tx.query<Backup['postings'][number]>(
+        'SELECT id, transaction_id, account_id, side, amount, rate, amount_brl FROM postings ORDER BY rowid',
+      ),
+      rates: await tx.query<Backup['rates'][number]>('SELECT currency, date, rate_scaled FROM rate ORDER BY currency, date'),
+    };
+  });
 }
 
 /** Records that a backup was saved; Home reads it. Call only after the file was handed to the user. */

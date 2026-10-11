@@ -42,6 +42,8 @@ export type TransactionInput = {
   date: string;
   description: string;
   postings: PostingInput[];
+  /** The CSV transaction_id, set only by import so a repeated import skips it. */
+  externalId?: string;
 };
 
 export type TransactionFilter = { from?: string; to?: string; accountId?: string };
@@ -131,7 +133,12 @@ function checkAndStore(
 export async function createTransaction(db: Database, input: TransactionInput): Promise<Transaction> {
   const id = newId();
   await checkAndStore(db, input, async (tx) => {
-    await tx.run('INSERT INTO transactions (id, date, description) VALUES (?, ?, ?)', [id, input.date, input.description]);
+    await tx.run('INSERT INTO transactions (id, date, description, external_id) VALUES (?, ?, ?, ?)', [
+      id,
+      input.date,
+      input.description,
+      input.externalId ?? null,
+    ]);
     await insertPostings(tx, id, input.postings);
   });
   return (await getTransaction(db, id))!;

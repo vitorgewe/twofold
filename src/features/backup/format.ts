@@ -92,7 +92,10 @@ export function validateBackup(input: unknown): BackupValidation {
     currencies.set(row.code, { code: row.code, name: row.name, decimals: row.decimals });
   });
 
+  if (!currencies.has(BRL.code)) fail(`The currency ${BRL.code} is missing.`);
+
   const accounts = new Map<string, BackupAccount>();
+  const activeNames = new Set<string>();
   table('accounts').forEach((row, i) => {
     if (
       !isStr(row.id) || !isStr(row.name) || !isStr(row.currency) ||
@@ -102,16 +105,26 @@ export function validateBackup(input: unknown): BackupValidation {
     }
     if (accounts.has(row.id)) return fail(`Duplicate account id ${row.id}.`);
     if (!currencies.has(row.currency)) return fail(`Account "${row.name}" uses unknown currency ${row.currency}.`);
+    if (!row.archived) {
+      const key = row.name.toLowerCase();
+      if (activeNames.has(key)) return fail(`Two active accounts are named "${row.name}" (names ignore case).`);
+      activeNames.add(key);
+    }
     accounts.set(row.id, row as unknown as BackupAccount);
   });
 
   const transactions = new Map<string, BackupTransaction>();
+  const externalIds = new Set<string>();
   table('transactions').forEach((row, i) => {
     const externalOk = row.external_id === undefined || row.external_id === null || isStr(row.external_id);
     if (!isStr(row.id) || typeof row.description !== 'string' || !isStr(row.date) || !isIsoDate(row.date) || !externalOk) {
       return fail(`transactions[${i}] is malformed.`);
     }
     if (transactions.has(row.id)) return fail(`Duplicate transaction id ${row.id}.`);
+    if (typeof row.external_id === 'string') {
+      if (externalIds.has(row.external_id)) return fail(`Duplicate external_id ${row.external_id}.`);
+      externalIds.add(row.external_id);
+    }
     transactions.set(row.id, row as unknown as BackupTransaction);
   });
 

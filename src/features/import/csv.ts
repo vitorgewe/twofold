@@ -61,6 +61,9 @@ function splitRecords(text: string): { line: number; fields: string[] }[] | stri
         if (ch === '\n') line++;
         field += ch;
       }
+    } else if (wasQuoted && ch !== ',' && ch !== '\n' && ch !== '\r') {
+      // The field's closing quote has been read: only blanks may follow before the comma or the end of the line.
+      if (ch !== ' ' && ch !== '\t') return `Line ${line}: unexpected character after a closing quote.`;
     } else if (ch === '"' && field.trim() === '') {
       quoted = true;
       wasQuoted = true;
