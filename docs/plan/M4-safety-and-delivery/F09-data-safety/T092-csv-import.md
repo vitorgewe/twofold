@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T091-backup-export-import]]", "[[T042-save-transaction]]"]
 estimate_tokens: 800000
 estimate_hours: 1
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 122506
+actual_hours: 0.09
 tags: [task]
 ---
 # T092 CSV import
