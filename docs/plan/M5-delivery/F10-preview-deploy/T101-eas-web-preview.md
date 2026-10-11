@@ -3,7 +3,7 @@ id: T101
 type: task
 feature: "[[F10-preview-deploy]]"
 milestone: "[[M5-delivery]]"
-status: todo
+status: blocked
 depends_on: ["[[T051-home-screen]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
@@ -38,7 +38,7 @@ Never submit to a store.
 
 ## Definition of Done
 
-- [ ] Session: `eas-cli` is a dev dependency, `eas.json` has the `preview` channel, and `.relay/verify.sh` passes
+- [x] Session: `eas-cli` is a dev dependency, `eas.json` has the `preview` channel, and `.relay/verify.sh` passes
 - [ ] Session: an ADR records how the cross-origin isolation headers reach the static deploy
 - [ ] Author: the preview URL opens the app at 390 x 844
 - [ ] Author: `crossOriginIsolated` is `true` on the preview, and an account created there survives a reload
@@ -49,5 +49,12 @@ Never submit to a store.
 - [[ADR-0013-web-preview-on-eas]]
 
 ## Progress
+
+### 2026-10-11 10:00
+- Done: added `eas-cli` as a dev dependency and `eas.json` with a `preview` build profile on channel `preview`; `.relay/verify.sh` passes. `app.json` already had the EAS `projectId` from the author's `eas init`.
+- Failed or surprising: the ADR on how the COOP/COEP headers reach the static deploy is NOT written. WebFetch and WebSearch are denied in this session, and nothing in `node_modules` (expo, expo-router, @expo/cli, eas-cli) documents a headers mechanism for EAS Hosting. I will not record an accepted ADR from memory, because later work depends on it. Header value must be `require-corp` (not `credentialless`, which Safari lacks); `metro.config.js` currently sets `credentialless` on the dev server only.
+- `.relay/deploy.sh` notes (not run): (1) `eas-cli update --channel preview` needs `expo-updates` and a `runtimeVersion` in `app.json`, neither is present, so that step will likely fail; (2) it needs `jq`; (3) `eas deploy` publishes `dist`, so headers must be inside the export or in an EAS Hosting config file the docs name.
+- Next: the author, or a session with web access, reads the EAS Hosting docs on custom headers, adds the mechanism, writes the next-free ADR (ADR-0017), and decides on expo-updates. Then tick the Session ADR item.
+- Status: blocked, needs docs access for the headers mechanism.
 
 ## QA
