@@ -6,8 +6,9 @@ const config = getDefaultConfig(__dirname);
 config.resolver.assetExts.push('wasm');
 
 // SharedArrayBuffer (needed by wa-sqlite) requires cross-origin isolation.
+// Same COEP value as the deploy (app.json), so local checks cover it.
 config.server.enhanceMiddleware = (middleware) => (req, res, next) => {
-  res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   middleware(req, res, next);
 };

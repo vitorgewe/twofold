@@ -21,7 +21,7 @@ SQLite on web (wa-sqlite through expo-sqlite) needs `SharedArrayBuffer`, which b
 
 ## Decision
 
-Provisional: option 1. The `expo-router` plugin entry in `app.json` carries `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`. `require-corp` is used instead of `credentialless` because `credentialless` does not work in Safari. `metro.config.js` is unchanged and keeps `credentialless` for the dev server.
+Provisional: option 1. The `expo-router` plugin entry in `app.json` carries `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`. `require-corp` is used instead of `credentialless` because `credentialless` does not work in Safari. `metro.config.js` sends the same `require-corp` on the dev server, so local checks cover it.
 
 This is not yet known to work on EAS Hosting. Unknown: whether EAS Hosting applies the plugin headers, whether they apply with `single`, and whether the SQLite worker and wasm load under `require-corp`. The test that settles it is the author's check on the real preview: `crossOriginIsolated` is `true` in the browser console and an account created there survives a reload. If it fails, supersede this ADR with option 2, then option 3.
 
