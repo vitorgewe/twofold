@@ -1,4 +1,4 @@
-import { daysBetween, formatRate, todayIso } from './format';
+import { daysBetween, formatRate } from './format';
 
 describe('formatRate', () => {
   it('drops trailing zeros but keeps two decimals', () => {
@@ -15,11 +15,5 @@ describe('daysBetween', () => {
     expect(daysBetween('2026-10-11', '2026-10-11')).toBe(0);
     expect(daysBetween('2026-02-27', '2026-03-01')).toBe(2);
     expect(daysBetween('2026-10-12', '2026-10-11')).toBe(-1);
-  });
-});
-
-describe('todayIso', () => {
-  it('formats the local date', () => {
-    expect(todayIso(new Date(2026, 0, 5))).toBe('2026-01-05');
   });
 });

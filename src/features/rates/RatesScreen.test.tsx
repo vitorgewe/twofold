@@ -4,7 +4,7 @@ import { migrations, runMigrations, type Database } from '@/data/database';
 import { addRate, listRates } from '@/data/rates';
 import { createTestDatabase } from '@/data/sqljs-adapter';
 
-import { todayIso } from './format';
+import { todayIso } from '@/features/ledger/date';
 import { RatesScreen } from './RatesScreen';
 
 let mockDb: Database;

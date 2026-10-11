@@ -4,11 +4,11 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 
 import { getDatabase } from '@/data/database';
 import { addRate, useRates } from '@/data/rates';
-import { isIsoDate } from '@/features/ledger/date';
+import { isIsoDate, todayIso } from '@/features/ledger/date';
 import { normalizeDecimalInput, parseRate } from '@/features/ledger/money';
 import { strings } from '@/ui/strings';
 
-import { daysBetween, formatRate, todayIso } from './format';
+import { daysBetween, formatRate } from './format';
 
 const t = strings.rates;
 const CURRENCIES = ['USD', 'BTC'] as const;
