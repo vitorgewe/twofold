@@ -9,6 +9,7 @@
       "mcp__playwright",
       "Bash(.relay/init.sh*)",
       "Bash(.relay/verify.sh*)",
+      "Bash(relay check*)",
       "Bash(npm *)",
       "Bash(npx *)",
       "Bash(node *)",
