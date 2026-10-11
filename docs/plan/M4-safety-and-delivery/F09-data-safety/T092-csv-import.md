@@ -3,12 +3,12 @@ id: T092
 type: task
 feature: "[[F09-data-safety]]"
 milestone: "[[M4-safety-and-delivery]]"
-status: todo
+status: done
 depends_on: ["[[T091-backup-export-import]]", "[[T042-save-transaction]]"]
 estimate_tokens: 800000
 estimate_hours: 1
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 122506
+actual_hours: 0.09
 tags: [task]
 ---
 # T092 CSV import
@@ -31,12 +31,12 @@ Out of scope: other file formats, column mapping.
 
 ## Definition of Done
 
-- [ ] The spec example (t-0001 Supermarket, t-0002 Buy BTC) previews 3 accounts to create and 2 new transactions, imports, and leaves net worth at -R$ 300.00 (Checking -2,050.00 and Crypto +1,750.00 on the books)
-- [ ] Importing the same file again previews 0 new and 2 existing, and net worth is unchanged
-- [ ] A file where t-0002 lost its Checking row is rejected as a whole, the error names the transaction and the line, and nothing is written
-- [ ] A BTC row without a rate, and an amount with too many decimals, are rejected with their line numbers
-- [ ] A description containing a comma inside quotes is imported intact
-- [ ] Jest tests for the parser and the validator; a Playwright test imports the fixture twice
+- [x] The spec example (t-0001 Supermarket, t-0002 Buy BTC) previews 3 accounts to create and 2 new transactions, imports, and leaves net worth at -R$ 300.00 (Checking -2,050.00 and Crypto +1,750.00 on the books)
+- [x] Importing the same file again previews 0 new and 2 existing, and net worth is unchanged
+- [x] A file where t-0002 lost its Checking row is rejected as a whole, the error names the transaction and the line, and nothing is written
+- [x] A BTC row without a rate, and an amount with too many decimals, are rejected with their line numbers
+- [x] A description containing a comma inside quotes is imported intact
+- [x] Jest tests for the parser and the validator; a Playwright test imports the fixture twice
 
 ## Related decisions
 
@@ -45,5 +45,10 @@ Out of scope: other file formats, column mapping.
 - [[ADR-0008-uuid-identifiers]]
 
 ## Progress
+
+### 2026-10-11 12:55
+- Done: Import CSV in Settings with preview (accounts to create, new, existing, postings, errors with line numbers; Import disabled on errors). Parser (`src/features/import/csv.ts`), validator (`validate.ts`, pure), DB layer (`src/data/csvImport.ts`, one SQLite transaction, reuses `createAccount`/`createTransaction`). Fixtures in `e2e/fixtures/` (`example.csv` is the spec example, `split.csv` is one credit, three debits and a quoted comma). Seen working at 390x844 in a fresh browser context via Playwright (`e2e/csv-import.spec.ts`): example previews 3/2, imports, net worth -R$300.00 after reload; second import previews 0 new / 2 existing, net worth unchanged; broken files rejected with line numbers and disabled Import; quoted comma kept in the transactions list. `.relay/verify.sh` prints `verify: ok`.
+- Failed or surprising: the ticket says "Migration 3" but version 3 was already the date index, so `external_id` is migration version 4 (unique index, since SQLite cannot add a UNIQUE column). The backup format carries an optional `external_id` per transaction (format_version stays 1, old backups still load) so a restore keeps the import idempotent; covered by a Jest test. The ticket's "a fixture file" became two files because the DoD needs the spec example alone. The dev server had to be restarted with `.relay/init.sh --restart` to pick up new files.
+- Next: nothing left for this task. Rules I chose: accounts match by case-insensitive name among active accounts; BRL rows must leave rate_to_brl empty; accounts to create are counted only for new transactions.
 
 ## QA

@@ -66,6 +66,9 @@ export function HomeScreen() {
       <Link href="/rates" style={styles.link}>
         {strings.rates.menu}
       </Link>
+      <Link href="/settings" style={styles.link}>
+        {strings.settings.menu}
+      </Link>
     </ScrollView>
   );
 }

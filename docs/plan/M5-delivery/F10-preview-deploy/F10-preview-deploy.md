@@ -1,7 +1,7 @@
 ---
 id: F10
 type: feature
-milestone: "[[M4-safety-and-delivery]]"
+milestone: "[[M5-delivery]]"
 status: todo
 estimate_tokens: 300000
 estimate_hours: 0.5

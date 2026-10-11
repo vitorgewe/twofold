@@ -3,6 +3,7 @@ import * as SQLite from 'expo-sqlite';
 import { createDatabase, type Driver } from './connection';
 import { ledgerMigration } from './migrations/002-ledger';
 import { transactionDateIndexMigration } from './migrations/003-transaction-date-index';
+import { transactionExternalIdMigration } from './migrations/004-transaction-external-id';
 
 export type SqlValue = string | number | null;
 
@@ -25,6 +26,7 @@ export const migrations: Migration[] = [
   },
   ledgerMigration,
   transactionDateIndexMigration,
+  transactionExternalIdMigration,
 ];
 
 export async function runMigrations(db: Database, list: Migration[]): Promise<void> {

@@ -1,0 +1,5 @@
+transaction_id,date,description,account,account_type,side,amount,currency,rate_to_brl
+s-0001,2026-09-10,"Dinner, drinks and tip",Checking,asset,credit,100.00,BRL,
+s-0001,2026-09-10,"Dinner, drinks and tip",Dining,expense,debit,60.00,BRL,
+s-0001,2026-09-10,"Dinner, drinks and tip",Drinks,expense,debit,30.00,BRL,
+s-0001,2026-09-10,"Dinner, drinks and tip",Tips,expense,debit,10.00,BRL,
