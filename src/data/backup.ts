@@ -13,7 +13,7 @@ export async function exportBackup(db: Database, now: Date = new Date()): Promis
     exported_at: now.toISOString(),
     currencies: await db.query('SELECT code, name, decimals FROM currency ORDER BY code'),
     accounts: accounts.map((a) => ({ ...a, archived: a.archived === 1 })),
-    transactions: await db.query('SELECT id, date, description FROM transactions ORDER BY rowid'),
+    transactions: await db.query('SELECT id, date, description, external_id FROM transactions ORDER BY rowid'),
     postings: await db.query(
       'SELECT id, transaction_id, account_id, side, amount, rate, amount_brl FROM postings ORDER BY rowid',
     ),
@@ -44,7 +44,12 @@ export async function importBackup(db: Database, backup: Backup): Promise<void> 
       ]);
     }
     for (const t of backup.transactions) {
-      await tx.run('INSERT INTO transactions (id, date, description) VALUES (?, ?, ?)', [t.id, t.date, t.description]);
+      await tx.run('INSERT INTO transactions (id, date, description, external_id) VALUES (?, ?, ?, ?)', [
+        t.id,
+        t.date,
+        t.description,
+        t.external_id ?? null,
+      ]);
     }
     for (const p of backup.postings) {
       await tx.run(

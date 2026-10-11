@@ -3,10 +3,13 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { exportBackup, importBackup, markBackupDone } from '@/data/backup';
+import { applyCsvImport, previewCsvImport } from '@/data/csvImport';
 import { getDatabase } from '@/data/database';
+import { parseCsv } from '@/features/import/csv';
+import type { ImportPlan } from '@/features/import/validate';
 import { strings } from '@/ui/strings';
 
-import { appVersion, pickBackupFile, saveBackupFile } from './files';
+import { appVersion, pickBackupFile, pickCsvFile, saveBackupFile } from './files';
 import { backupFileName, parseBackup, serializeBackup, type Backup, type BackupCounts } from './format';
 
 const t = strings.settings;
@@ -17,11 +20,13 @@ export function SettingsScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const [problem, setProblem] = useState<{ title: string; reasons: string[] } | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
+  const [csvPlan, setCsvPlan] = useState<ImportPlan | null>(null);
 
   const reset = () => {
     setMessage(null);
     setProblem(null);
     setPreview(null);
+    setCsvPlan(null);
   };
 
   const onExport = async () => {
@@ -63,6 +68,32 @@ export function SettingsScreen() {
     }
   };
 
+  const onPickCsv = async () => {
+    reset();
+    try {
+      const text = await pickCsvFile();
+      if (text === null) return;
+      const parsed = parseCsv(text);
+      if (!parsed.ok) return setProblem({ title: t.csvErrorsTitle, reasons: parsed.errors });
+      setCsvPlan(await previewCsvImport(await getDatabase(), parsed.rows));
+    } catch {
+      setProblem({ title: t.importFailed, reasons: [] });
+    }
+  };
+
+  const onConfirmCsv = async () => {
+    if (!csvPlan || csvPlan.errors.length > 0) return;
+    const count = csvPlan.newTransactions.length;
+    try {
+      await applyCsvImport(await getDatabase(), csvPlan);
+      reset();
+      setMessage(count === 0 ? t.csvNothingNew : t.csvImported(count));
+    } catch (e) {
+      reset();
+      setProblem({ title: t.importFailed, reasons: e instanceof Error && e.message ? [e.message] : [] });
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text accessibilityRole="header" style={styles.title}>
@@ -78,6 +109,15 @@ export function SettingsScreen() {
         </Pressable>
         <Pressable accessibilityRole="button" onPress={onPick} style={styles.button}>
           <Text style={styles.buttonText}>{t.import}</Text>
+        </Pressable>
+      </View>
+
+      <Text accessibilityRole="header" style={styles.sectionTitle}>
+        {t.csv}
+      </Text>
+      <View style={styles.actions}>
+        <Pressable accessibilityRole="button" onPress={onPickCsv} style={styles.button}>
+          <Text style={styles.buttonText}>{t.importCsv}</Text>
         </Pressable>
       </View>
 
@@ -118,6 +158,40 @@ export function SettingsScreen() {
         </View>
       )}
 
+      {csvPlan && (
+        <View testID="csv-preview" style={styles.preview}>
+          <Text style={styles.sectionTitle}>{t.csvPreviewTitle}</Text>
+          <Text>{t.count(t.csvAccountsToCreate, csvPlan.accountsToCreate.length)}</Text>
+          <Text>{t.count(t.csvNewTransactions, csvPlan.newTransactions.length)}</Text>
+          <Text>{t.count(t.csvExisting, csvPlan.existingCount)}</Text>
+          <Text>{t.count(t.csvPostings, csvPlan.postingCount)}</Text>
+          {csvPlan.errors.length > 0 && (
+            <View testID="csv-errors" style={styles.errorBox}>
+              <Text style={styles.errorTitle}>{t.csvErrorsTitle}</Text>
+              {csvPlan.errors.map((error, i) => (
+                <Text key={i} style={styles.errorText}>
+                  {error}
+                </Text>
+              ))}
+            </View>
+          )}
+          <View style={styles.actions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: csvPlan.errors.length > 0 }}
+              disabled={csvPlan.errors.length > 0}
+              onPress={onConfirmCsv}
+              style={[styles.button, csvPlan.errors.length > 0 && styles.disabled]}
+            >
+              <Text style={styles.buttonText}>{t.csvImport}</Text>
+            </Pressable>
+            <Pressable accessibilityRole="button" onPress={reset} style={styles.button}>
+              <Text style={styles.buttonText}>{t.cancel}</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
       <Text testID="app-version">{t.version(appVersion())}</Text>
       <Link href="/" style={styles.link}>
         {t.back}
@@ -132,6 +206,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: '600' },
   actions: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
   button: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 6, backgroundColor: '#111827' },
+  disabled: { opacity: 0.4 },
   danger: { backgroundColor: '#b91c1c' },
   buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
   success: { color: '#166534' },

@@ -8,7 +8,8 @@ export const FORMAT_VERSION = 1;
 
 export type BackupCurrency = { code: string; name: string; decimals: number };
 export type BackupAccount = { id: string; name: string; type: AccountType; currency: string; archived: boolean };
-export type BackupTransaction = { id: string; date: string; description: string };
+/** `external_id` is the CSV transaction_id, kept so a restored database still skips already imported rows. */
+export type BackupTransaction = { id: string; date: string; description: string; external_id?: string | null };
 export type BackupPosting = {
   id: string;
   transaction_id: string;
@@ -106,7 +107,8 @@ export function validateBackup(input: unknown): BackupValidation {
 
   const transactions = new Map<string, BackupTransaction>();
   table('transactions').forEach((row, i) => {
-    if (!isStr(row.id) || typeof row.description !== 'string' || !isStr(row.date) || !isIsoDate(row.date)) {
+    const externalOk = row.external_id === undefined || row.external_id === null || isStr(row.external_id);
+    if (!isStr(row.id) || typeof row.description !== 'string' || !isStr(row.date) || !isIsoDate(row.date) || !externalOk) {
       return fail(`transactions[${i}] is malformed.`);
     }
     if (transactions.has(row.id)) return fail(`Duplicate transaction id ${row.id}.`);

@@ -1,0 +1,5 @@
+transaction_id,date,description,account,account_type,side,amount,currency,rate_to_brl
+t-0001,2026-09-05,Supermarket,Checking,asset,credit,300.00,BRL,
+t-0001,2026-09-05,Supermarket,Groceries,expense,debit,300.00,BRL,
+t-0002,2026-09-06,Buy BTC,Crypto,asset,debit,0.00500000,BTC,350000
+t-0002,2026-09-06,Buy BTC,Checking,asset,credit,1750.00,BRL,

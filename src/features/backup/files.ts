@@ -26,8 +26,13 @@ export async function saveBackupFile(name: string, text: string): Promise<void> 
 }
 
 /** Lets the user pick a file and returns its text, or null when they cancel. */
-export async function pickBackupFile(): Promise<string | null> {
-  const result = await DocumentPicker.getDocumentAsync({ type: ['application/json', 'text/plain'], copyToCacheDirectory: true });
+export const pickBackupFile = (): Promise<string | null> => pickTextFile(['application/json', 'text/plain']);
+
+export const pickCsvFile = (): Promise<string | null> =>
+  pickTextFile(['text/csv', 'text/comma-separated-values', 'text/plain']);
+
+async function pickTextFile(type: string[]): Promise<string | null> {
+  const result = await DocumentPicker.getDocumentAsync({ type, copyToCacheDirectory: true });
   if (result.canceled) return null;
   const asset = result.assets[0];
   return asset.file ? asset.file.text() : new File(asset.uri).text();
