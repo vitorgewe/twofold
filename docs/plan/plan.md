@@ -11,9 +11,10 @@ Milestones in the order they are built. Each milestone is one pull request.
 | [[M1-foundation]] | Running app, database that survives reloads, tested ledger core | [[F01-app-foundation]], [[F02-ledger-core]] | 2600000 | 3.5 |
 | [[M2-core-flow]] | Accounts, new transaction and Home: the core flow works end to end | [[F03-accounts]], [[F04-new-transaction]], [[F05-home]] | 2550000 | 3.25 |
 | [[M3-review-and-reports]] | Browse, edit and delete transactions; rates; income statement | [[F06-transactions]], [[F07-rates]], [[F08-result]] | 1600000 | 2 |
-| [[M4-safety-and-delivery]] | Backup, CSV import, preview deploy and release publishing | [[F09-data-safety]], [[F10-preview-deploy]] | 1500000 | 2 |
+| [[M4-safety-and-delivery]] | Backup and CSV import | [[F09-data-safety]] | 1200000 | 1.5 |
+| [[M5-delivery]] | Preview deploy on EAS and release publishing, led by the author | [[F10-preview-deploy]] | 300000 | 0.5 |
 
-Totals: 22 tasks, 8250000 tokens, 10.75 hours. Two tasks (T101, T102) start `blocked` because they need the author's Expo account and token.
+Totals: 22 tasks, 8250000 tokens, 10.75 hours. The deploy tasks (T101, T102) are in M5 and start `blocked`: unattended sessions are denied `eas` and `.relay/deploy.sh` by design, so the author logs in, deploys and creates the token, and a session only prepares the configuration.
 
 Status lives in each ticket's `status` property. `relay status` prints the totals.
 
