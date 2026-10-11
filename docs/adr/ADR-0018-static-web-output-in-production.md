@@ -35,3 +35,8 @@ Easier: the isolation headers can reach the hosting. `.relay/verify.sh` and the 
 Harder: development renders as a single-page app while production is pre-rendered, so a bug that only shows after pre-rendering appears first in the export or on the deployment.
 
 Still unknown, and settled by the author after the next deploy: whether EAS Hosting applies the manifest headers. The decision is wrong if `curl -I` on the new deployment URL lacks the two headers or `crossOriginIsolated` is false in the browser; the fallbacks are options 3 and 4.
+
+## Update 2026-10-11: routes the static export can serve
+
+The first deployments showed two more 404s on EAS Hosting: a direct load or a reload of `/accounts/<id>` and `/transactions/<id>`, because the static export only has the files it pre-rendered (`[id].html` is not mapped to arbitrary ids), and `/transactions` without a trailing slash, because `app/transactions/index.tsx` is exported as `transactions/index.html`. The screens still rendered after hydration, with the status 404 and React error #418. Rewrites need a server output in Expo Router, which this project does not use. Decision: no dynamic segment and no `index.tsx` inside a folder under `app/`. The detail screens are `app/account.tsx` and `app/transaction.tsx`, read the id from the query (`/account?id=...`), and the transactions list is `app/transactions.tsx`. `tests/static-routes.test.ts` enforces it. Old links of the form `/accounts/<id>` are not kept; the app never published them outside its own navigation.
+
