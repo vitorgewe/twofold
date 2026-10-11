@@ -3,7 +3,7 @@ id: T091
 type: task
 feature: "[[F09-data-safety]]"
 milestone: "[[M4-safety-and-delivery]]"
-status: review
+status: done
 depends_on: ["[[T051-home-screen]]", "[[T062-edit-and-delete-transaction]]"]
 estimate_tokens: 400000
 estimate_hours: 0.5

@@ -3,7 +3,7 @@ id: T092
 type: task
 feature: "[[F09-data-safety]]"
 milestone: "[[M4-safety-and-delivery]]"
-status: review
+status: done
 depends_on: ["[[T091-backup-export-import]]", "[[T042-save-transaction]]"]
 estimate_tokens: 800000
 estimate_hours: 1
