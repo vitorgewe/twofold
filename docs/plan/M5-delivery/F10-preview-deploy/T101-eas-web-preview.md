@@ -3,7 +3,7 @@ id: T101
 type: task
 feature: "[[F10-preview-deploy]]"
 milestone: "[[M5-delivery]]"
-status: review
+status: todo
 depends_on: ["[[T051-home-screen]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
@@ -91,3 +91,7 @@ Never submit to a store.
 ### Round 2, 2026-10-11
 - Session items pass again: `.relay/verify.sh` prints `verify: ok`, `crossOriginIsolated` is `true` on the local dev server after restart.
 - Defect D2 still open: Progress has no preview URL and no result of the three checks, and the Author items are unticked. Reproduce: read Progress. Expected: URL and result written by the author. Actual: nothing. Needs a human (`.relay/deploy.sh`); not verifiable by QA. No further build work exists for a session.
+
+### Round 3, 2026-10-11
+- Session items pass again: `.relay/verify.sh` prints `verify: ok`, `crossOriginIsolated` is `true` on the local dev server at 390 x 844.
+- Defect D2 still open, unchanged. Reproduce: read Progress. Expected: preview URL and the result of the three checks written by the author. Actual: nothing. Needs a human (`.relay/deploy.sh`); not verifiable by QA.
