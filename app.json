@@ -2,7 +2,7 @@
   "expo": {
     "name": "twofold",
     "slug": "twofold",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "orientation": "portrait",
     "scheme": "twofold",
     "userInterfaceStyle": "automatic",
