@@ -10,14 +10,13 @@ import {
   useTransaction,
   type TransactionInput,
 } from '@/data/transactions';
-import { BRL, BTC, USD } from '@/features/ledger/currency';
+import { BRL, currencyOf } from '@/features/ledger/currency';
 import { MoneyText } from '@/ui/MoneyText';
 import { strings } from '@/ui/strings';
 
 import { TransactionForm } from './TransactionForm';
 
 const t = strings.transactions;
-const CURRENCIES = { BRL, USD, BTC };
 
 export function TransactionDetailScreen({ transactionId }: { transactionId: string }) {
   const router = useRouter();
@@ -80,7 +79,7 @@ export function TransactionDetailScreen({ transactionId }: { transactionId: stri
                 </View>
                 <MoneyText
                   brl={p.amountBrl}
-                  currency={CURRENCIES[(account?.currency ?? 'BRL') as keyof typeof CURRENCIES] ?? BRL}
+                  currency={currencyOf(account?.currency ?? BRL.code) ?? BRL}
                   native={p.amount}
                 />
               </View>
