@@ -26,6 +26,7 @@ export function TransactionDetailScreen({ transactionId }: { transactionId: stri
   const [editing, setEditing] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleted, setDeleted] = useState(false);
 
   const save = async (draft: TransactionInput) => {
     await updateTransaction(await getDatabase(), transactionId, draft);
@@ -36,6 +37,7 @@ export function TransactionDetailScreen({ transactionId }: { transactionId: stri
     setDeleteError(null);
     try {
       await deleteTransaction(await getDatabase(), transactionId);
+      setDeleted(true);
       router.dismissTo('/transactions');
     } catch (e) {
       setDeleteError(e instanceof Error && e.message ? e.message : t.deleteFailed);
@@ -52,7 +54,7 @@ export function TransactionDetailScreen({ transactionId }: { transactionId: stri
         {t.detailBack}
       </Link>
 
-      {loading && !transaction ? null : !transaction ? (
+      {(loading && !transaction) || deleted ? null : !transaction ? (
         <View style={styles.notice}>
           <Text accessibilityRole="header" style={styles.noticeTitle}>
             {t.notFoundTitle}
