@@ -19,3 +19,5 @@ playwright-report/
 
 expo-env.d.ts
 # @end expo-cli
+# relay: throwaway export used to check the web build
+.relay/dist-check/

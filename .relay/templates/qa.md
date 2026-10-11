@@ -24,6 +24,10 @@ Approved or rejected, in one sentence, with the main reason.
 | Definition of Done item | Result | What I did and what happened |
 |---|---|---|
 
+## Open for the author
+
+`Author:` Definition of Done items that are still unchecked, with the ticket each belongs to. They never count against the verdict.
+
 ## Defects
 
 Each defect: the ticket it belongs to, steps to reproduce, expected, actual.

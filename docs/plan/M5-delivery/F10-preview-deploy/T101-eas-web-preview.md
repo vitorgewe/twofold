@@ -38,7 +38,7 @@ Research for the cross-origin isolation ADR (done by the author's interactive se
 - So the ADR must record the decision as provisional: set the headers through the `expo-router` plugin in `app.json` (make that change), keep `metro.config.js` for the dev server, and treat the author's check on the real preview (`crossOriginIsolated` is `true` and an account survives a reload) as the test that settles it. List the fallbacks in the ADR: a `coi-serviceworker` that injects the headers on the client, or a static host that supports a `_headers` file. Do not claim the headers work on EAS Hosting before that check.
 
 Human steps, after the session (author):
-- Run `.relay/deploy.sh`, open the URL it prints at 390 x 844, and check three things: the app loads, `crossOriginIsolated` is `true` in the browser console, and an account created there survives a reload. Write the URL and the result in Progress.
+- For the first deploy run `npx expo export --platform web --clear` and then `npx eas-cli deploy` yourself (interactive: it asks for the preview subdomain once; `.relay/deploy.sh` no longer calls `eas update`, which is for native apps and needs `expo-updates`). Open the URL it prints at 390 x 844, and check three things: the app loads, `crossOriginIsolated` is `true` in the browser console, and an account created there survives a reload. Write the URL and the result in Progress.
 
 Never submit to a store.
 
