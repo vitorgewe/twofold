@@ -3,7 +3,7 @@ id: T102
 type: task
 feature: "[[F10-preview-deploy]]"
 milestone: "[[M5-delivery]]"
-status: review
+status: done
 depends_on: ["[[T101-eas-web-preview]]", "[[T013-release-please-extra-files]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
@@ -56,3 +56,7 @@ Check by the author, after merging a release pull request: the job runs, and Set
 - Defect D1: Settings shows `Version 0.2.0` on the dev server, and `dist` (fresh export from `.relay/verify.sh`) embeds `"version":"0.2.0"`, while `app.json`, `package.json` and `.release-please-manifest.json` say 0.3.0. Reproduce: `.relay/init.sh --restart`, open `/settings` at 390 x 844; or search the `dist` entry bundle for `"version"`. Expected 0.3.0. Find out whether it is a stale Metro cache (try `npx expo export --platform web --clear`) or a real problem, since the milestone needs the deployed Settings to show the new version.
 - Defect D3: `--prod` in `eas-cli deploy` is unconfirmed; the author's check on a real release settles it.
 - Author item (deployed Settings shows the new version) is not verifiable here.
+
+### Round 2, 2026-10-11
+- D1 resolved: after `.relay/init.sh --restart`, `/settings` at 390 x 844 shows `Version 0.3.0`, matching `app.json` and `package.json`. `.relay/verify.sh` prints `verify: ok`.
+- No defect found in the session work. D3 (`--prod`, and `eas update` needing `expo-updates` and `runtimeVersion`) stays unconfirmed until the author's first real release. The Author item is not verifiable here and remains unticked.

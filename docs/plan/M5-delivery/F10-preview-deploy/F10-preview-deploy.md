@@ -38,3 +38,6 @@ Both tasks start `blocked` because they need accounts and tokens that only the a
 
 ### Round 1, 2026-10-11
 - Both Definition of Done items are not verifiable here (no preview URL recorded, no real release). Local Settings shows 0.2.0 against 0.3.0 in the repository (D1). Details in `docs/qa/QA-M5-delivery.md`.
+
+### Round 2, 2026-10-11
+- D1 resolved (Settings shows 0.3.0 locally). Both Definition of Done items are still not verifiable here: T101 has no recorded preview URL or checks (D2), and no real release has been merged. T102 is done; F10 stays open until the author records the preview checks and a release deploy.
