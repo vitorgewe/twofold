@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/vitorgewe/twofold/compare/v0.3.0...v0.3.1) (2026-10-11)
+
+
+### Bug Fixes
+
+* export static web output so EAS Hosting gets the isolation headers ([#14](https://github.com/vitorgewe/twofold/issues/14)) ([091dac2](https://github.com/vitorgewe/twofold/commit/091dac234d6128f8895bbebd6b2f55d249317f7c))
+
 ## [0.3.0](https://github.com/vitorgewe/twofold/compare/v0.2.0...v0.3.0) (2026-10-11)
 
 
