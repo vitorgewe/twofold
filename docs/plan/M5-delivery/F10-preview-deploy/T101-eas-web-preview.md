@@ -3,7 +3,7 @@ id: T101
 type: task
 feature: "[[F10-preview-deploy]]"
 milestone: "[[M5-delivery]]"
-status: todo
+status: review
 depends_on: ["[[T051-home-screen]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
@@ -73,6 +73,12 @@ Never submit to a store.
 - Done: re-checked the session items against the repo: `eas-cli` dev dependency, `eas.json` `preview` channel, `expo-router` plugin headers in `app.json`, ADR-0017 accepted. `.relay/verify.sh` passes (221 tests, web export ok). No secret in the repository.
 - Failed or surprising: nothing new to build. The QA defect for this task is only that the author items have no recorded result; a session cannot run `eas` or `deploy.sh`, so I did not touch them. The bundle version mismatch (D1) belongs to the QA report, not to this task.
 - Next: author runs `.relay/deploy.sh`, then writes the preview URL and the three checks (loads at 390 x 844, `crossOriginIsolated` true, account survives reload) here and ticks the Author items.
+- Status: review (session items done; author items remain unticked on purpose).
+
+### 2026-10-11 15:00
+- Done: re-ran `.relay/verify.sh`: `verify: ok` (221 tests, web export ok). Session items remain done; nothing left in the repository for a session to build.
+- Failed or surprising: nothing new. The Author items (preview URL, `crossOriginIsolated`, account survives reload) need `.relay/deploy.sh`, which sessions may not run.
+- Next: author runs `.relay/deploy.sh`, writes URL and the three results here, ticks the Author items.
 - Status: review (session items done; author items remain unticked on purpose).
 
 ## QA
