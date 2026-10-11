@@ -7,8 +7,8 @@ status: review
 depends_on: ["[[T101-eas-web-preview]]", "[[T013-release-please-extra-files]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
-actual_tokens: 0
-actual_hours: 0
+actual_tokens: 35065
+actual_hours: 0.01
 tags: [task]
 ---
 # T102 Release EAS publish
