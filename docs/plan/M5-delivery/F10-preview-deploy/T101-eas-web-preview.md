@@ -46,8 +46,8 @@ Never submit to a store.
 
 - [x] Session: `eas-cli` is a dev dependency, `eas.json` has the `preview` channel, and `.relay/verify.sh` passes
 - [x] Session: an ADR records how the cross-origin isolation headers reach the static deploy
-- [ ] Author: the preview URL opens the app at 390 x 844
-- [ ] Author: `crossOriginIsolated` is `true` on the preview, and an account created there survives a reload
+- [x] Author: the preview URL opens the app at 390 x 844
+- [x] Author: `crossOriginIsolated` is `true` on the preview, and an account created there survives a reload
 - [ ] No secret or token is in the repository
 
 ## Related decisions
@@ -86,6 +86,12 @@ Never submit to a store.
 - Failed or surprising: nothing to build. The Author items need `.relay/deploy.sh` and `eas`, which sessions may not run, so they stay unticked.
 - Next: author runs `.relay/deploy.sh`, then writes the preview URL and the three results here and ticks the Author items.
 - Status: review (session items done; author items remain unticked on purpose).
+
+### 2026-10-11 first deploy (recorded by the author's interactive session)
+- Done: the author ran `npx eas-cli deploy` and then `npx eas-cli deploy --prod`. Preview `https://twofold--9ipr9b8o3h.expo.app`, production `https://twofold.expo.app`. With the static export of ADR-0018 both answer with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` (checked with `curl -I`, also on `/accounts`, `/settings`, `/rates`, `/result`). The first deploy, made with `web.output: single`, served no such header, which is why ADR-0018 exists.
+- Checked in headless Chromium at 390 x 844 against the preview and then production: `e2e/smoke.spec.ts` passes on both; `crossOriginIsolated` is `true` and `SharedArrayBuffer` is a function; an account created on the preview was still there after a reload. The Author items above are ticked on that evidence. NOT checked yet: a real phone, and Safari.
+- Failed or surprising: the hosting answers 404 for `/transactions` without a slash, and for dynamic routes such as `/accounts/<id>` when loaded or reloaded directly (the static export has `[id].html` and the hosting does not map arbitrary ids to it). The app still shows the right screen after hydration, but the console logs React error #418 (hydration mismatch) and the status is 404. In-app navigation is unaffected.
+- Next: the repository variable `PROD_URL` is set to `https://twofold.expo.app` for the header check in the release deploy job (T102). Decide later whether to fix the 404 and the hydration warning on direct loads.
 
 ## QA
 
