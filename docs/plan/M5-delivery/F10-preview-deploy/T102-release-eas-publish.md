@@ -3,7 +3,7 @@ id: T102
 type: task
 feature: "[[F10-preview-deploy]]"
 milestone: "[[M5-delivery]]"
-status: todo
+status: review
 depends_on: ["[[T101-eas-web-preview]]", "[[T013-release-please-extra-files]]"]
 estimate_tokens: 150000
 estimate_hours: 0.25
@@ -43,6 +43,11 @@ Check by the author, after merging a release pull request: the job runs, and Set
 - Done: added a `deploy` job to `.github/workflows/release.yml`. The `release-please` job now has `id: release` and exposes `release_created` as a job output. `deploy` has `needs: release-please` and `if: needs.release-please.outputs.release_created == 'true'`, so it is skipped otherwise. It runs `npm ci`, `npx expo export --platform web` and `npx eas-cli deploy --prod --non-interactive`. `EXPO_TOKEN` comes from `secrets.EXPO_TOKEN` as an env var on the deploy step only. The workflow triggers only on push to `main`, so fork pull requests never reach the secret. `.relay/verify.sh` passes.
 - Failed or surprising: no YAML or workflow linter was allowed to run (python and `eas deploy --help` were denied), so "valid" and "token appears nowhere" are checked by reading the file only. The token is referenced only as `secrets.EXPO_TOKEN`. `--prod` is from my knowledge of eas-cli, not confirmed locally.
 - Next: the author checks on the first real release: the `deploy` job runs and Settings on the deployed app shows the new version. If `--prod` is rejected, drop it (`.relay/deploy.sh` uses plain `eas-cli deploy`). Note that T101's isolation-header check (ADR-0017) is still pending on the real preview.
+
+### 2026-10-11 12:50
+- Done: resolved QA D1. The version shown is a stale Metro cache, not a code problem. A clean export (`npx expo export --platform web --clear`) embeds `"version":"0.3.0"`, and after `.relay/init.sh --restart` Settings at 390 x 844 shows `Version 0.3.0` (read from `Constants.expoConfig.version`, so it follows `app.json`). The CI deploy job runs on a fresh checkout with `npm ci`, so it has no stale cache. `.relay/verify.sh` passes. No workflow change was needed.
+- Failed or surprising: D3 (`--prod`) still cannot be confirmed here, as `eas` is denied. My clean export wrote to `.relay/dist-check/`, which is untracked and not committed; it can be deleted.
+- Next: nothing for a session. The author merges a release pull request and checks that the `deploy` job runs and that Settings on the deployed app shows the new version. If `--prod` is rejected, drop it.
 
 ## QA
 
