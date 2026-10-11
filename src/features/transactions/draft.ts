@@ -1,6 +1,7 @@
 import { balanceDifference, isBalanced, type PostingDraft, type PostingSide } from '../ledger/balance';
 import { BRL, currencyOf, type Currency } from '../ledger/currency';
 import { normalizeDecimalInput, parseAmount, parseRate, toBrl } from '../ledger/money';
+import { formatRate } from '../rates/format';
 
 export type PostingRow = {
   key: number;
@@ -72,7 +73,7 @@ export function rowsFromPostings(
       accountId: p.accountId,
       side: p.side,
       amountText: formatPlain(p.amount, currency.decimals),
-      rateText: foreign && p.rate !== null ? formatPlain(p.rate, 8).replace(/0+$/, '').replace(/\.$/, '.0') : '',
+      rateText: foreign && p.rate !== null ? formatRate(p.rate) : '',
       // Keep the stored BRL value, which may differ by a centavo from amount times rate.
       brlText: foreign ? formatBrlPlain(p.amountBrl) : null,
     };

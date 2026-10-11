@@ -39,6 +39,16 @@ export function TransactionsScreen() {
     setToText('');
   };
 
+  /** Typing leaves the preset: the other bound keeps the value the preset showed. */
+  const typeDate = (which: 'from' | 'to', text: string) => {
+    if (choice) {
+      setFromText(period.from ?? '');
+      setToText(period.to ?? '');
+      setChoice(null);
+    }
+    (which === 'from' ? setFromText : setToText)(text);
+  };
+
   const noFilter = choice === 'all' && !accountId;
 
   return (
@@ -73,10 +83,7 @@ export function TransactionsScreen() {
             placeholder="YYYY-MM-DD"
             style={styles.input}
             value={choice ? (period.from ?? '') : fromText}
-            onChangeText={(text) => {
-              setChoice(null);
-              setFromText(text);
-            }}
+            onChangeText={(text) => typeDate('from', text)}
           />
         </View>
         <View style={styles.dateField}>
@@ -86,10 +93,7 @@ export function TransactionsScreen() {
             placeholder="YYYY-MM-DD"
             style={styles.input}
             value={choice ? (period.to ?? '') : toText}
-            onChangeText={(text) => {
-              setChoice(null);
-              setToText(text);
-            }}
+            onChangeText={(text) => typeDate('to', text)}
           />
         </View>
       </View>

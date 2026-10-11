@@ -33,4 +33,13 @@ describe('ResultScreen', () => {
     await fireEvent.changeText(screen.getByLabelText('From'), 'nope');
     expect(await screen.findByText('Enter both dates as YYYY-MM-DD.')).toBeTruthy();
   });
+
+  it('reports a reversed custom range instead of an empty period', async () => {
+    await render(<ResultScreen />);
+    await fireEvent.press(screen.getByRole('radio', { name: 'Custom' }));
+    await fireEvent.changeText(screen.getByLabelText('From'), '2026-10-31');
+    await fireEvent.changeText(screen.getByLabelText('To'), '2026-10-01');
+    expect(await screen.findByText('The start date must not be after the end date.')).toBeTruthy();
+    expect(screen.queryByText('No movements in this period')).toBeNull();
+  });
 });

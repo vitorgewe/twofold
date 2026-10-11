@@ -76,6 +76,7 @@ export const strings = {
     emptyTitle: 'No movements in this period',
     emptyBody: 'Income and expenses recorded in this period will show up here.',
     dateInvalid: 'Enter both dates as YYYY-MM-DD.',
+    rangeInvalid: 'The start date must not be after the end date.',
     back: 'Back to home',
   },
   rates: {

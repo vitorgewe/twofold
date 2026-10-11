@@ -48,10 +48,11 @@ export function ResultScreen() {
 
   const period =
     choice === 'custom'
-      ? isIsoDate(fromText) && isIsoDate(toText)
+      ? isIsoDate(fromText) && isIsoDate(toText) && fromText <= toText
         ? { from: fromText, to: toText }
         : undefined
       : resultPeriodFor(choice, new Date());
+  const reversed = choice === 'custom' && isIsoDate(fromText) && isIsoDate(toText) && fromText > toText;
   const { data: statement } = useIncomeStatement(period);
 
   const pick = (next: Choice) => {
@@ -113,7 +114,7 @@ export function ResultScreen() {
           </View>
         </View>
       )}
-      {!period && <Text style={styles.small}>{t.dateInvalid}</Text>}
+      {!period && <Text style={styles.small}>{reversed ? t.rangeInvalid : t.dateInvalid}</Text>}
 
       {empty && (
         <View style={styles.notice}>
