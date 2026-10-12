@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/vitorgewe/twofold/compare/v0.3.1...v0.3.2) (2026-10-12)
+
+
+### Bug Fixes
+
+* use static routes so direct loads do not answer 404 ([#18](https://github.com/vitorgewe/twofold/issues/18)) ([d2f6a3a](https://github.com/vitorgewe/twofold/commit/d2f6a3a637d4f9cdf0e288bf7277242a0e096774))
+
 ## [0.3.1](https://github.com/vitorgewe/twofold/compare/v0.3.0...v0.3.1) (2026-10-11)
 
 
