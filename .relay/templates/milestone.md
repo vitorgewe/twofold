@@ -1,6 +1,7 @@
 ---
 id: M0
 type: milestone
+version: 1
 tags: [milestone]
 ---
 # M0 Milestone title

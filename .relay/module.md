@@ -29,6 +29,10 @@ The first task of the first milestone is always the scaffold. It must:
 | Unit tests only | `npx jest` |
 | Smoke test against the dev server | `npx playwright test e2e/smoke.spec.ts` |
 
+## Dependencies
+
+Change dependencies with `npx --yes npm@10 install <package>` rather than plain `npm install`: CI runs `npm ci` with its own npm, and a lockfile written by a newer local npm can pass `.relay/verify.sh` (node_modules is already installed) and still fail in CI. When `package.json` or `package-lock.json` differ from `main`, `.relay/verify.sh` also runs `npx --yes npm@10 ci --dry-run` and fails with the command that regenerates the lock. Change the major with `CI_NPM` in `.relay/verify.sh`, or set it empty to skip the check.
+
 ## Unattended sessions
 
 - Create and change files with the Write and Edit tools. Shell redirection and heredocs (`cat > file <<'EOF'`) are refused by the permission rules.
